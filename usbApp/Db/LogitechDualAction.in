@@ -11,4 +11,15 @@ DPAD_STATE [4] -> UInt8 /0x0F
 
 #Buttons
 1_PRESSED [4] -> Bool /0x10
-1_PRESSED [4] -> Bool /0x10
+2_PRESSED [4] -> Bool /0x20
+3_PRESSED [4] -> Bool /0x40
+4_PRESSED [4] -> Bool /0x80
+
+5_PRESSED [5] -> Bool /0x01
+6_PRESSED [5] -> Bool /0x02
+7_PRESSED [5] -> Bool /0x04
+8_PRESSED [5] -> Bool /0x08
+9_PRESSED [5] -> Bool /0x10
+10_PRESSED [5] -> Bool /0x20
+LSTICK_PRESSED [5] -> Bool /0x40
+RSTICK_PRESSED [5] -> Bool /0x80
