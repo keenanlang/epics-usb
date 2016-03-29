@@ -10,16 +10,16 @@ RSTICK_UD_STATE [3] -> UInt8
 DPAD_STATE [4] -> UInt8 /0x0F
 
 #Buttons
-1_PRESSED [4] -> Bool /0x10
-2_PRESSED [4] -> Bool /0x20
-3_PRESSED [4] -> Bool /0x40
-4_PRESSED [4] -> Bool /0x80
+BUTTON1_PRESSED [4] -> Bool /0x10
+BUTTON2_PRESSED [4] -> Bool /0x20
+BUTTON3_PRESSED [4] -> Bool /0x40
+BUTTON4_PRESSED [4] -> Bool /0x80
 
-5_PRESSED [5] -> Bool /0x01
-6_PRESSED [5] -> Bool /0x02
-7_PRESSED [5] -> Bool /0x04
-8_PRESSED [5] -> Bool /0x08
-9_PRESSED [5] -> Bool /0x10
-10_PRESSED [5] -> Bool /0x20
-LSTICK_PRESSED [5] -> Bool /0x40
-RSTICK_PRESSED [5] -> Bool /0x80
+BUTTON5_PRESSED  [5] -> Bool /0x01
+BUTTON6_PRESSED  [5] -> Bool /0x02
+BUTTON7_PRESSED  [5] -> Bool /0x04
+BUTTON8_PRESSED  [5] -> Bool /0x08
+BUTTON9_PRESSED  [5] -> Bool /0x10
+BUTTON10_PRESSED [5] -> Bool /0x20
+LSTICK_PRESSED   [5] -> Bool /0x40
+RSTICK_PRESSED   [5] -> Bool /0x80
