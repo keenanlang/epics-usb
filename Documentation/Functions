@@ -1,3 +1,16 @@
+usbShowIO
+	Toggles whether the driver should dump a hexadecimal representation of the
+	raw input data it recieves on each update. This is useful when figuring out
+	the schema of the data, if none is provided. Though, due to the amount of
+	characters being written making it difficult to read the regular IOC output,
+	this should only be used when creating support for a device.
+	
+	const char* port_name
+		The port name the driver is operating under
+		
+	int print_io_data
+		Turn printing off or on (zero/non-zero)
+
 usbSetFrequency
 	Sets the frequency at which the driver reads values from the device. Most
 	USB devices work at 125hz.
