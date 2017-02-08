@@ -9,7 +9,7 @@
 class DataLayout
 {
 	public:
-		DataLayout();
+		DataLayout(const char* specification_file);
 		void               add(Allocation& input);
 			
 		unsigned    const  size();              //Number of Params

@@ -28,7 +28,9 @@ hidDriver::hidDriver(const char* port_name, DataLayout& input, DataLayout& outpu
 	                 ASYN_MULTIDEVICE,                          //Interface Type
 	                 1,                                         //Autoconnect
 	                 0,                                         //Thread Priority
-	                 0)                                         //Initial Stack Size
+	                 0),                                        //Initial Stack Size
+	input_specification(input), 
+	output_specification(output)
 {	
 	/* Class Initialization */
 	this->input_specification = input;

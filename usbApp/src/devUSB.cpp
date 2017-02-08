@@ -1,86 +1,18 @@
 #include <map>
+#include <string>
 
-#include <iostream>
-
+#include <iocsh.h>
 #include <epicsExit.h>
 
-#include "devUSB.h"
-#include "Allocation.h"
-#include "StringUtils.h"
-#include "StorageType.h"
+#include "DataLayout.h"
+#include "hidDriver.h"
 
-using namespace std;
-
-
-static void remove_driver(void* data);
-static hidDriver* get_driver(const char* name);
-static bool port_used(const char* port_name);
-
-static void parse(const char* filename, DataLayout& spec);
-
-static map<string, hidDriver*> device_drivers;
-
-/**
- * Parse a given specification file, replacing all instances of the given
- * macros.
- *
- * @param[in]  spec_file     The specification file to read parameter listings from
- * @param[out] spec          The final listing of all parameters and their data
- */
-static void parse_layout(ifstream* spec_file, DataLayout* spec)
-{
-	string line;
-	string type;
-		
-	pair<string,string> index_range;
-	pair<string,string> optional_shift;
-	
-	while (getline(*spec_file, line))
-	{
-		trim(&line);
-
-		if(! line.empty() && line[0] != '#')
-		{
-			Allocation toadd;
-
-			unsigned end = 0;
-			
-			/* NAME [START |, END|] |>> SHIFT| -> TYPE |/MASK| */
-			toadd.name = split_on(&line, "[");
-			
-			index_range = split_optional(&line, ",", "]");
-				to_int(index_range.first, &toadd.start);
-				to_int(index_range.second, &end);
-				toadd.length = (end == 0) ? 1 : (end - toadd.start) + 1;
-				
-			optional_shift = split_optional(&line, ">>", "->");
-			
-			if (not optional_shift.second.empty())
-			{
-				to_int(optional_shift.second, &toadd.shift);
-				
-				toadd.start += (int) (toadd.shift / 8);
-				toadd.shift = toadd.shift % 8;
-			}
-			
-			type = split_on(&line, "/");
-				type_from_string(type, &toadd.type);
-				hex_to_int(line, &toadd.mask);
-				
-			if (toadd.type == TYPE_UNKNOWN)
-			{
-				printf("Unknown parameter type for param: %s\n", toadd.name.c_str());
-			}
-
-			spec->add(toadd);
-		}
-	}
-}
+static std::map<std::string, hidDriver*> device_drivers;
 
 
 static hidDriver* get_driver(const char* name)
 {
-	map<string, hidDriver*>::iterator dev = device_drivers.find(string(name));
+	std::map<std::string, hidDriver*>::iterator dev = device_drivers.find(std::string(name));
 	
 	return (dev != device_drivers.end()) ? dev->second : NULL;
 }
@@ -90,7 +22,7 @@ static void remove_driver(void* data)
 {
 	hidDriver* driver = (hidDriver*) data;
 	
-	device_drivers.erase(string(driver->portName));
+	device_drivers.erase(std::string(driver->portName));
 }
 
 static bool port_used(const char* port_name)    { return (get_driver(port_name) != NULL); }
@@ -271,34 +203,12 @@ bool checkTransArgs(const iocshArgBuf* args)
 }
 
 
-static void parse(const char* filename, DataLayout& spec)
-{
-	ifstream spec_file;
-
-	if(filename == NULL) { return; }
-	
-	spec_file.open(filename);
-	
-	if (not spec_file.is_open())
-	{
-		printf("Error: couldn't open specified file.\n");
-		return;
-	}
-	
-	parse_layout(&spec_file, &spec);
-	spec_file.close();
-}
-
-
 void usbCreateDriver(const char* port_name, const char* input_filename, const char* output_filename)
 {
-	DataLayout      input_spec;
-	DataLayout      output_spec;
+	DataLayout input_spec  (input_filename);
+	DataLayout output_spec (output_filename);
 	
-	parse(input_filename, input_spec);
-	parse(output_filename, output_spec);
-	
-	device_drivers[string(port_name)] = new hidDriver(port_name, input_spec, output_spec);
+	device_drivers[std::string(port_name)] = new hidDriver(port_name, input_spec, output_spec);
 }
 
 
@@ -308,7 +218,7 @@ void usbConnectDevice( const char* port_name,
                              int   product_id, 
                        const char* serial_num)
 {
-	string serial_out = (serial_num == NULL) ? "" : string(serial_num);
+	std::string serial_out = (serial_num == NULL) ? "" : std::string(serial_num);
 	
 	get_driver(port_name)->connect( (uint16_t) vendor_id, 
 	                                (uint16_t) product_id, 
