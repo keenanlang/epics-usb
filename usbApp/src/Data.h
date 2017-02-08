@@ -5,8 +5,7 @@
 
 #include <asynPortDriver.h>
 
-#include "Allocation.h"
-#include "StorageType.h"
+#include "DataLayout.h"
 
 typedef void (*READ_FUNCTION)(asynPortDriver*, uint8_t*, Allocation*);
 typedef void (*WRITE_FUNCTION)(asynPortDriver*, uint8_t*, Allocation*);

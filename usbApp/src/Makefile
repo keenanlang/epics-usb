@@ -18,7 +18,6 @@ usb_SRCS_Linux += hidDriverOutput.cpp
 
 usb_SRCS_Linux += StringUtils.cpp
 usb_SRCS_Linux += DataLayout.cpp
-usb_SRCS_Linux += StorageType.cpp
 usb_SRCS_Linux += DataRead.cpp
 usb_SRCS_Linux += DataWrite.cpp
 
