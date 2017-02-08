@@ -1,5 +1,5 @@
 #include "hidDriver.h"
-#include "Data.h"
+#include "DataIO.h"
 
 void hidDriver::loadOutputData(const struct libusb_endpoint_descriptor endpoint)
 {

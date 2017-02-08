@@ -18,8 +18,7 @@ usb_SRCS_Linux += hidDriverOutput.cpp
 
 usb_SRCS_Linux += StringUtils.cpp
 usb_SRCS_Linux += DataLayout.cpp
-usb_SRCS_Linux += DataRead.cpp
-usb_SRCS_Linux += DataWrite.cpp
+usb_SRCS_Linux += DataIO.cpp
 
 usb_LIBS_Linux += asyn 
 USR_SYS_LIBS_Linux += usb-1.0

@@ -2,7 +2,7 @@
 #include <sstream>
 
 #include "hidDriver.h"
-#include "Data.h"
+#include "DataIO.h"
 
 void update_thread_callback(void* arg)
 {	

@@ -3,7 +3,7 @@
 
 #include <epicsTypes.h>
 
-#include "Data.h"
+#include "DataIO.h"
 
 static int num_bits(unsigned mask);
 
@@ -11,30 +11,55 @@ static void read_signed(asynPortDriver* callback, uint8_t* data, Allocation* lay
 static void read_unsigned(asynPortDriver* callback, uint8_t* data, Allocation* layout, int max_bytes);
 
 static void read_INT8(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_INT8(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+
 static void read_INT16(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_INT16(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+
 static void read_INT32(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_INT32(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 
 static void read_UINT8(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_UINT8(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+
 static void read_UINT16(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_UINT16(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+
 static void read_UINT32(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_UINT32(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 
 static void read_UINT32DIGITAL(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_UINT32DIGITAL(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 
 static void read_BOOLEAN(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_BOOLEAN(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 
 static void read_FLOAT32(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_FLOAT32(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+
 static void read_FLOAT64(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_FLOAT64(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 
 static void read_INT8ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_INT8ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+
 static void read_INT16ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_INT16ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+
 static void read_INT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_INT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 
 static void read_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+
 static void read_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 
 static void read_STRING(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_STRING(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 
 static void read_UNKNOWN(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_UNKNOWN(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 
 
 static int num_bits(unsigned mask)
@@ -83,6 +108,24 @@ static void read_unsigned(asynPortDriver* callback, uint8_t* data, Allocation* l
 	callback->setIntegerParam(layout->index, utemp);
 }
 
+static void write_int(asynPortDriver* callback, uint8_t* data, Allocation* layout, int max_bytes)
+{
+	epicsInt32 temp;
+	epicsUInt32 value;
+	epicsInt32 current;
+	
+	callback->getIntegerParam(layout->index, &temp);
+	
+	memcpy(&current, data, std::min(max_bytes, (int) layout->length));
+	
+	value = (epicsUInt32) temp;
+	
+	value &= layout->mask;
+	value <<= layout->shift;
+	current |= value;
+	
+	memcpy(data, &current, std::min(max_bytes, (int) layout->length));
+}
 
 /**
  * Which function to use to parse data coming in from the usb device based
@@ -116,6 +159,38 @@ READ_FUNCTION getReadFunction(STORAGE_TYPE type)
 	}
 }
 
+/**
+ * Which function to use to push data out to the usb device based
+ * upon what output type the data is being processed as.
+ *
+ * @param[in]  type    The output type of the parameter
+ *
+ * @return  The function used to process data as the given type.
+ */
+WRITE_FUNCTION getWriteFunction(STORAGE_TYPE type)
+{
+	switch(type)
+	{
+		case TYPE_INT8:             return write_INT8;
+		case TYPE_INT16:            return write_INT16;
+		case TYPE_INT32:            return write_INT32;
+		case TYPE_UINT8:            return write_UINT8;
+		case TYPE_UINT16:           return write_UINT16;
+		case TYPE_UINT32:           return write_UINT32;
+		case TYPE_UINT32DIGITAL:    return write_UINT32DIGITAL;
+		case TYPE_BOOLEAN:          return write_BOOLEAN;
+		case TYPE_FLOAT32:          return write_FLOAT32;
+		case TYPE_FLOAT64:          return write_FLOAT64;
+		case TYPE_INT8ARRAY:        return write_INT8ARRAY;
+		case TYPE_INT16ARRAY:       return write_INT16ARRAY;
+		case TYPE_INT32ARRAY:       return write_INT32ARRAY;
+		case TYPE_FLOAT32ARRAY:     return write_FLOAT32ARRAY;
+		case TYPE_FLOAT64ARRAY:     return write_FLOAT64ARRAY;
+		case TYPE_STRING:           return write_STRING;
+		default:                    return write_UNKNOWN;
+	}
+}
+
 
 
 static void read_INT8(asynPortDriver* callback, uint8_t* data, Allocation* layout)
@@ -123,10 +198,21 @@ static void read_INT8(asynPortDriver* callback, uint8_t* data, Allocation* layou
 	read_signed(callback, data, layout, 1);
 }
 
+static void write_INT8(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+	write_int(callback, data, layout, 1);
+}
+
+
 
 static void read_INT16(asynPortDriver* callback, uint8_t* data, Allocation* layout)
 {
 	read_signed(callback, data, layout, 2);
+}
+
+static void write_INT16(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+	write_int(callback, data, layout, 2);
 }
 
 
@@ -149,16 +235,32 @@ static void read_INT32(asynPortDriver* callback, uint8_t* data, Allocation* layo
 	read_signed(callback, data, layout, 4);
 }
 
+static void write_INT32(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+	write_int(callback, data, layout, 4);
+}
+
+
 
 static void read_UINT8(asynPortDriver* callback, uint8_t* data, Allocation* layout)
 {
 	read_unsigned(callback, data, layout, 1);
 }
 
+static void write_UINT8(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+	write_int(callback, data, layout, 1);
+}
+
 
 static void read_UINT16(asynPortDriver* callback, uint8_t* data, Allocation* layout)
 {
 	read_unsigned(callback, data, layout, 2);
+}
+
+static void write_UINT16(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+	write_int(callback, data, layout, 2);
 }
 
 
@@ -180,6 +282,11 @@ static void read_UINT32(asynPortDriver* callback, uint8_t* data, Allocation* lay
 	read_unsigned(callback, data, layout, 4);
 }
 
+static void write_UINT32(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+	write_int(callback, data, layout, 4);
+}
+
 
 /**
  * Digital ints are also simple copys, treat up to four bytes as a 32bit 
@@ -198,6 +305,11 @@ static void read_UINT32DIGITAL(asynPortDriver* callback, uint8_t* data, Allocati
 	memcpy(&utemp, data, std::min(4, (int) layout->length));
 
 	callback->setUIntDigitalParam(layout->index, utemp, layout->mask);
+}
+
+static void write_UINT32DIGITAL(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+	write_int(callback, data, layout, 4);
 }
 
 
@@ -223,6 +335,27 @@ static void read_BOOLEAN(asynPortDriver* callback, uint8_t* data, Allocation* la
 	callback->setIntegerParam(layout->index, utemp);
 }
 
+static void write_BOOLEAN(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+	epicsInt32 temp = 0;
+	epicsUInt32 value = 0;
+	epicsUInt32 current = 0;
+	
+	callback->getIntegerParam(layout->index, &temp);
+	memcpy(&current, data, std::min(4, (int) layout->length));
+	
+	value = (epicsUInt32) temp;
+	
+	uint8_t test[1];
+	memcpy(test, &value, 1);
+	
+	value *= layout->mask;
+	value <<= layout->shift;
+	current |= value;
+	
+	memcpy(data, &current, std::min(4, (int) layout->length));
+}
+
 
 /**
  * Treat up to 4 bytes as a 32bit float
@@ -241,6 +374,18 @@ static void read_FLOAT32(asynPortDriver* callback, uint8_t* data, Allocation* la
 	callback->setDoubleParam(layout->index, (epicsFloat64) ftemp);
 }
 
+static void write_FLOAT32(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+	epicsFloat64 temp;
+	epicsFloat32 value;
+	
+	callback->getDoubleParam(layout->index, &temp);
+	
+	value = (epicsFloat32) temp;
+	
+	memcpy(data, &value, 4);
+}
+
 
 /**
  * Treat up to 8 bytes as a 64bit float
@@ -257,6 +402,15 @@ static void read_FLOAT64(asynPortDriver* callback, uint8_t* data, Allocation* la
 	memcpy(&ftemp, data, std::min(8, (int) layout->length));
 	
 	callback->setDoubleParam(layout->index, ftemp);
+}
+
+static void write_FLOAT64(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+	epicsFloat64 value;
+	
+	callback->getDoubleParam(layout->index, &value);
+	
+	memcpy(data, &value, 8);
 }
 
 
@@ -279,6 +433,10 @@ static void read_STRING(asynPortDriver* callback, uint8_t* data, Allocation* lay
 	callback->setStringParam(layout->index, (const char*) buffer);
 }
 
+static void write_STRING(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+	callback->getStringParam(layout->index, std::min(40, (int) layout->length), (char*) data);
+}
 
 /**
  * This is literally a copy of the array, while bitshifting and masking make 
@@ -297,6 +455,8 @@ static void read_INT8ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* 
 	
 	callback->doCallbacksInt8Array(atemp, layout->length, layout->index, 0);
 }
+
+static void write_INT8ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout) { /* To Do */ }
 
 
 /**
@@ -319,6 +479,8 @@ static void read_INT16ARRAY(asynPortDriver* callback, uint8_t* data, Allocation*
 	callback->doCallbacksInt16Array(atemp, len, layout->index, 0);
 }
 
+static void write_INT16ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout) { /* To Do */ }
+
 
 /**
  * This is literally a copy of the array, while bitshifting and masking make 
@@ -340,6 +502,8 @@ static void read_INT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation*
 	callback->doCallbacksInt32Array(atemp, len, layout->index, 0);
 }
 
+static void write_INT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout) { /* To Do */ }
+
 
 /**
  * This is literally a copy of the array, no bitshift or mask
@@ -359,6 +523,8 @@ static void read_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocatio
 	
 	callback->doCallbacksFloat32Array(atemp, len, layout->index, 0);
 }
+
+static void write_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout) { /* To Do */ }
 
 
 /**
@@ -380,6 +546,8 @@ static void read_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocatio
 	callback->doCallbacksFloat64Array(atemp, len, layout->index, 0);
 }
 
+static void write_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout) { /* To Do */ }
+
 
 /**
  * Purposefully does nothing
@@ -392,4 +560,9 @@ static void read_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocatio
 static void read_UNKNOWN(asynPortDriver* callback, uint8_t* data, Allocation* layout)
 {
 	
+}
+
+static void write_UNKNOWN(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+
 }
