@@ -11,7 +11,6 @@ DBD += usbSupport.dbd
 usb_SRCS_Linux += devUSB.cpp
 
 usb_SRCS_Linux += hidDriverMain.cpp
-usb_SRCS_Linux += hidDriverStatus.cpp
 usb_SRCS_Linux += hidDriverConnect.cpp
 usb_SRCS_Linux += hidDriverInput.cpp
 usb_SRCS_Linux += hidDriverOutput.cpp
