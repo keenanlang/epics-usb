@@ -16,7 +16,6 @@ usb_SRCS_Linux += hidDriverConnect.cpp
 usb_SRCS_Linux += hidDriverInput.cpp
 usb_SRCS_Linux += hidDriverOutput.cpp
 
-usb_SRCS_Linux += Allocation.cpp
 usb_SRCS_Linux += StringUtils.cpp
 usb_SRCS_Linux += DataLayout.cpp
 usb_SRCS_Linux += StorageType.cpp
