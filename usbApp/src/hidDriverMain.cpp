@@ -29,28 +29,21 @@ hidDriver::hidDriver(const char* port_name, DataLayout& input, DataLayout& outpu
 	                 1,                                         //Autoconnect
 	                 0,                                         //Thread Priority
 	                 0),                                        //Initial Stack Size
-	input_specification(input), 
-	output_specification(output)
+	input_specification(input), output_specification(output),
+	connected(false),
+	INTERFACE(0),
+	TIMEOUT(DEFAULT_TIMEOUT),
+	FREQUENCY(DEFAULT_FREQUENCY),
+	TIME_BETWEEN_CHECKS(DEFAULT_CHECK),
+	DEBUG_LEVEL(0)
 {	
-	/* Class Initialization */
-	this->input_specification = input;
-	this->output_specification = output;
-	
 	this->device_state = epicsMutexCreate();
 	this->input_state  = epicsMutexCreate();
 	this->output_state = epicsMutexCreate();
-	this->connected    = false;
-	this->INTERFACE    = 0;
 	
 	this->state        = NULL;
 	this->last_state   = NULL;
 	this->DEVICE       = NULL;
-	
-	this->TIMEOUT             = DEFAULT_TIMEOUT;
-	this->FREQUENCY           = DEFAULT_FREQUENCY;
-	this->TIME_BETWEEN_CHECKS = DEFAULT_CHECK;
-
-	this->DEBUG_LEVEL = 0;
 	
 	/* Asyn Initialization */
 	this->createParams(this->input_specification);

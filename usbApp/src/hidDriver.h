@@ -70,6 +70,11 @@ class hidDriver : public asynPortDriver
 		void connect();
 		void disconnect();
 	
+		DataLayout input_specification;
+		DataLayout output_specification;
+		
+		bool connected;
+		
 		uint16_t     VENDOR_ID;
 		uint16_t     PRODUCT_ID;
 		std::string  SERIAL_NUM;
@@ -81,21 +86,17 @@ class hidDriver : public asynPortDriver
 		unsigned int TRANSFER_LENGTH_OUT;
 		unsigned int ENDPOINT_ADDRESS_OUT;
 		
-		unsigned int DEBUG_LEVEL;
-		
-		DataLayout input_specification;
-		DataLayout output_specification;
-		
 		unsigned int    TIMEOUT;
         double FREQUENCY;
 		double TIME_BETWEEN_CHECKS;
+		
+		unsigned int DEBUG_LEVEL;
 		
 		uint8_t* state;
 		uint8_t* last_state;
 		
 		libusb_context*         context;
 		libusb_device_handle*   DEVICE;
-		bool connected;
 		epicsMutexId input_state;
 		epicsMutexId output_state;
 		epicsMutexId device_state;
