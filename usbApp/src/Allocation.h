@@ -33,8 +33,9 @@ typedef struct Allocation
 	Allocation(): name(""),
 	              length(0),
 	              start(0),
-	              index(0),
 	              mask(0xFFFFFFFF),
+	              shift(0),
+	              index(0),
 	              type(TYPE_UNKNOWN) {}
 } Allocation;
 
