@@ -8,20 +8,20 @@ LIBRARY_IOC_Linux += usb
 
 DBD += usbSupport.dbd
 
-usb_SRCS_Linux += devUSB.cpp
+usb_SRCS += devUSB.cpp
 
-usb_SRCS_Linux += hidDriverMain.cpp
-usb_SRCS_Linux += hidDriverConnect.cpp
-usb_SRCS_Linux += hidDriverInput.cpp
-usb_SRCS_Linux += hidDriverOutput.cpp
+usb_SRCS += hidDriverMain.cpp
+usb_SRCS += hidDriverConnect.cpp
+usb_SRCS += hidDriverInput.cpp
+usb_SRCS += hidDriverOutput.cpp
 
-usb_SRCS_Linux += StringUtils.cpp
-usb_SRCS_Linux += DataLayout.cpp
-usb_SRCS_Linux += DataIO.cpp
+usb_SRCS += StringUtils.cpp
+usb_SRCS += DataLayout.cpp
+usb_SRCS += DataIO.cpp
 
-usb_LIBS_Linux += asyn 
-USR_SYS_LIBS_Linux += usb-1.0
-usb_LIBS_Linux += $(EPICS_BASE_IOC_LIBS)
+usb_LIBS += asyn 
+USR_SYS_LIBS += usb-1.0
+usb_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #===========================
 
