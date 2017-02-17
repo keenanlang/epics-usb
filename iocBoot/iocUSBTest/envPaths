@@ -1,6 +1,0 @@
-epicsEnvSet("ARCH","linux-x86_64")
-epicsEnvSet("IOC","iocUSBTest")
-epicsEnvSet("TOP","/home/oxygen40/KLANG/Documents/Projects/Repository/git/epics-usb")
-epicsEnvSet("SUPPORT","/APSshare/epics/synApps_5_7/support")
-epicsEnvSet("ASYN","/APSshare/epics/synApps_5_7/support/asyn-4-21")
-epicsEnvSet("EPICS_BASE","/APSshare/epics/base-3.14.12.3")
