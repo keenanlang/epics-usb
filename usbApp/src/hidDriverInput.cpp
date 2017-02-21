@@ -15,7 +15,7 @@ void receive_data_callback(struct libusb_transfer* response)
 {
 	hidDriver* driver = (hidDriver*) response->user_data;
 	
-	driver->ReceiveData(response);
+	driver->receiveData(response);
 }
 
 
@@ -74,7 +74,7 @@ void hidDriver::update_thread()
 }
 
 
-void hidDriver::ReceiveData(struct libusb_transfer* response)
+void hidDriver::receiveData(struct libusb_transfer* response)
 {
 	if (response->status == LIBUSB_SUCCESS)    { this->updateParams(); }
 
