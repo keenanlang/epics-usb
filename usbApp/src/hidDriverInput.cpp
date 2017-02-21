@@ -11,6 +11,13 @@ void update_thread_callback(void* arg)
 	driver->update_thread();
 }
 
+void receive_data_callback(struct libusb_transfer* response)
+{
+	hidDriver* driver = (hidDriver*) response->user_data;
+	
+	driver->ReceiveData(response);
+}
+
 
 void hidDriver::update_thread()
 {
@@ -30,65 +37,80 @@ void hidDriver::update_thread()
 	{
 		epicsTimeGetCurrent(&start);
 		
-		epicsMutexLock(this->input_state);
-			int errno = libusb_interrupt_transfer( this->DEVICE, 
-		                                           this->ENDPOINT_ADDRESS_IN, 
-		                                           this->state, 
-		                                           this->TRANSFER_LENGTH_IN, 
-		                                           &amt_transferred, 
-		                                           this->TIMEOUT);
+		struct libusb_transfer *xfr = libusb_alloc_transfer(0);
+		libusb_fill_interrupt_transfer( xfr, 
+		                                this->DEVICE, 
+		                                this->ENDPOINT_ADDRESS_IN, 
+		                                this->state, 
+		                                this->TRANSFER_LENGTH_IN,
+		                                receive_data_callback,
+		                                this,
+		                                this->TIMEOUT);
 		
-			if (errno == LIBUSB_SUCCESS)    { this->updateParams(); }
+		int status = libusb_submit_transfer(xfr);
+		
 		epicsMutexUnlock(this->device_state);
-		epicsMutexUnlock(this->input_state);
-		/*
-		 * If the device is not there anymore, change state to disconnected 
-		 * and then try to connect again. Reconnecting will spawn its own
-		 * update thread, so we'll close out of this one.
-		 */
-		if (errno == LIBUSB_ERROR_NO_DEVICE or 
-		    errno == LIBUSB_ERROR_NOT_FOUND or
-			errno == LIBUSB_ERROR_PIPE)
+				
+		if (status == LIBUSB_ERROR_NO_DEVICE)
 		{
-			this->printDebug(1, "Problem communicating with device, attempting reconnection.\n");
-			
+			libusb_free_transfer(xfr);
+		
 			this->disconnect();
 			this->connect();
 			return;
 		}
 		
-		/*
-		 * If the device sends us too much information, then something in our
-		 * configuration is wrong. So we'll try to reload it.
-		 */
-		else if (errno == LIBUSB_ERROR_OVERFLOW)
+		do
 		{
-			this->printDebug(1, "Too much information sent by device, reloading connection parameters.\n");
+			libusb_handle_events(NULL);
+			epicsTimeGetCurrent(&end);
+		} while (epicsTimeDiffInSeconds(&end, &start) < this->FREQUENCY);
 		
-			epicsMutexLock(this->input_state);
-				this->setStatuses(this->input_specification, asynOverflow);
-			epicsMutexUnlock(this->input_state);
-			
-			this->loadDeviceInfo();
-		}
-		
-		else if (errno == LIBUSB_ERROR_TIMEOUT)
-		{
-			this->printDebug(1, "Connection timedout listening for input device report.\n");
-			
-			epicsMutexLock(this->input_state);
-				this->setStatuses(this->input_specification, asynTimeout);
-			epicsMutexUnlock(this->input_state);
-		}	
-			
-		epicsTimeGetCurrent(&end);
-			
-		epicsThreadSleep(this->FREQUENCY - epicsTimeDiffInSeconds(&end, &start));
 		epicsMutexLock(this->device_state);
 	}
 	
 	epicsMutexUnlock(this->device_state);
 	this->printDebug(20, "Updating stopped\n");
+}
+
+
+void hidDriver::ReceiveData(struct libusb_transfer* response)
+{
+	if (response->status == LIBUSB_SUCCESS)    { this->updateParams(); }
+
+	/*
+	* If the device is not there anymore, change state to disconnected 
+	* and then try to connect again. Reconnecting will spawn its own
+	* update thread, so we'll close out of this one.
+	*/
+	if (response->status == LIBUSB_ERROR_NO_DEVICE or 
+		response->status == LIBUSB_ERROR_NOT_FOUND or
+		response->status == LIBUSB_ERROR_PIPE)
+	{
+		this->printDebug(1, "Problem communicating with device, attempting reconnection.\n");
+		
+		this->disconnect();
+		this->connect();
+	}
+	
+	/*
+	* If the device sends us too much information, then something in our
+	* configuration is wrong. So we'll try to reload it.
+	*/
+	else if (response->status == LIBUSB_ERROR_OVERFLOW)
+	{
+		this->printDebug(1, "Too much information sent by device, reloading connection parameters.\n");
+	
+		this->setStatuses(this->input_specification, asynOverflow);	
+		this->loadDeviceInfo();
+	}
+	
+	else if (response->status == LIBUSB_ERROR_TIMEOUT)
+	{
+		this->printDebug(1, "Connection timedout listening for input device report.\n");
+		
+		this->setStatuses(this->input_specification, asynTimeout);
+	}	
 }
 
 
