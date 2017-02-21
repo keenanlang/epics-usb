@@ -110,7 +110,7 @@ void hidDriver::receiveData(struct libusb_transfer* response)
 		this->setStatuses(this->input_specification, asynTimeout);
 	}
 	
-	libusb_free_transfer(xfr);
+	libusb_free_transfer(response);
 }
 
 
