@@ -76,16 +76,14 @@ void hidDriver::update_thread()
 
 void hidDriver::receiveData(struct libusb_transfer* response)
 {
-	if (response->status == LIBUSB_SUCCESS)    { this->updateParams(); }
+	if (response->status == LIBUSB_TRANSFER_COMPLETED)    { this->updateParams(); }
 
 	/*
 	* If the device is not there anymore, change state to disconnected 
 	* and then try to connect again. Reconnecting will spawn its own
 	* update thread, so we'll close out of this one.
 	*/
-	if (response->status == LIBUSB_ERROR_NO_DEVICE or 
-		response->status == LIBUSB_ERROR_NOT_FOUND or
-		response->status == LIBUSB_ERROR_PIPE)
+	if (response->status == LIBUSB_TRANSFER_NO_DEVICE)
 	{
 		this->printDebug(1, "Problem communicating with device, attempting reconnection.\n");
 		
@@ -97,7 +95,7 @@ void hidDriver::receiveData(struct libusb_transfer* response)
 	* If the device sends us too much information, then something in our
 	* configuration is wrong. So we'll try to reload it.
 	*/
-	else if (response->status == LIBUSB_ERROR_OVERFLOW)
+	else if (response->status == LIBUSB_TRANSFER_OVERFLOW)
 	{
 		this->printDebug(1, "Too much information sent by device, reloading connection parameters.\n");
 	
@@ -105,12 +103,12 @@ void hidDriver::receiveData(struct libusb_transfer* response)
 		this->loadDeviceInfo();
 	}
 	
-	else if (response->status == LIBUSB_ERROR_TIMEOUT)
+	else if (response->status == LIBUSB_TRANSFER_TIMED_OUT)
 	{
 		this->printDebug(1, "Connection timedout listening for input device report.\n");
 		
 		this->setStatuses(this->input_specification, asynTimeout);
-	}	
+	}
 	
 	libusb_free_transfer(xfr);
 }
