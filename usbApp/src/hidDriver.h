@@ -22,11 +22,9 @@ bool contains(libusb_device* check);
 class hidDriver : public asynPortDriver
 {
 	public:
-		hidDriver(const char* portName, DataLayout& spec_input, DataLayout& spec_output);
-					
+		hidDriver(const char* portName, DataLayout& spec_input, DataLayout& spec_output);			
 		~hidDriver();
 		
-		void setTimeout(int new_timeout);
 		void setFrequency(double new_frequency);
 		void setConnectDelay(double new_delay);
 		void setInterface(int new_interface);
@@ -76,6 +74,7 @@ class hidDriver : public asynPortDriver
 		DataLayout output_specification;
 		
 		bool connected;
+		bool active;
 		
 		uint16_t     VENDOR_ID;
 		uint16_t     PRODUCT_ID;
@@ -88,8 +87,7 @@ class hidDriver : public asynPortDriver
 		unsigned int TRANSFER_LENGTH_OUT;
 		unsigned int ENDPOINT_ADDRESS_OUT;
 		
-		unsigned int    TIMEOUT;
-        double FREQUENCY;
+		unsigned int FREQUENCY;
 		double TIME_BETWEEN_CHECKS;
 		
 		unsigned int DEBUG_LEVEL;

@@ -41,7 +41,7 @@ asynStatus hidDriver::sendOutputReport()
 		                                       data, 
 		                                       this->TRANSFER_LENGTH_OUT, 
 		                                       &amt_transferred, 
-		                                       this->TIMEOUT);
+		                                       (int) (this->FREQUENCY * 1000));
 	epicsMutexUnlock(this->output_state);
 		
 	

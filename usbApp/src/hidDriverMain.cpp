@@ -9,8 +9,6 @@
  */
 static const double DEFAULT_FREQUENCY = .008; //seconds
 
-static const int DEFAULT_TIMEOUT = 20; //milliseconds
-
 /* 
  * If no device is found when attempting to connect, how long to wait 
  * before attempting to connect again.
@@ -32,7 +30,6 @@ hidDriver::hidDriver(const char* port_name, DataLayout& input, DataLayout& outpu
 	input_specification(input), output_specification(output),
 	connected(false),
 	INTERFACE(0),
-	TIMEOUT(DEFAULT_TIMEOUT),
 	FREQUENCY(DEFAULT_FREQUENCY),
 	TIME_BETWEEN_CHECKS(DEFAULT_CHECK),
 	DEBUG_LEVEL(0)
@@ -132,33 +129,8 @@ void hidDriver::setStatuses(DataLayout& spec, asynStatus status)
 void hidDriver::setFrequency(double freq)
 {
 	this->printDebug(10, "Setting Frequency: %fhz -> %fhz\n", this->FREQUENCY, freq);
-	/* 
-	 * Normally, comparing floating point numbers against constants is discouraged,
-	 * but the only time frequency will be zero is when the constant 0.0 is passed
-	 * is by hidSetFrequency, so things should be alright.
-	 */
-	if (this->FREQUENCY == 0.0)
-	{
-		this->FREQUENCY = freq;
-		
-		/*
-		 * To avoid spinlocking, our update thread stops when frequency is zero,
-		 * so we need to start it up again when we change back.
-		 */
-		startUpdating();
-	}
-	else
-	{	
-		this->FREQUENCY = freq;
-	}
-}
 
-
-void hidDriver::setTimeout(int timing)
-{
-	this->printDebug(10, "Setting Timeout: %dms -> %dms\n", TIMEOUT, timing);
-	
-	this->TIMEOUT = timing;
+	this->FREQUENCY = freq;
 }
 
 

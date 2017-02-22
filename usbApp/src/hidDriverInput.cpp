@@ -28,12 +28,11 @@ void hidDriver::update_thread()
 	 */
 	epicsTimeStamp start;
 	epicsTimeStamp end;
-	int amt_transferred;
 	
 	this->printDebug(20, "Starting update\n");
 	
-	epicsMutexLock(this->device_state);
-	while (this->connected && this->FREQUENCY > 0.0)
+	//epicsMutexLock(this->device_state);
+	while (this->connected)
 	{
 		epicsTimeGetCurrent(&start);
 		
@@ -45,11 +44,11 @@ void hidDriver::update_thread()
 		                                this->TRANSFER_LENGTH_IN,
 		                                receive_data_callback,
 		                                this,
-		                                this->TIMEOUT);
+		                                (int) (this->FREQUENCY * 1000));
 		
 		int status = libusb_submit_transfer(xfr);
 		
-		epicsMutexUnlock(this->device_state);
+		//epicsMutexUnlock(this->device_state);
 				
 		if (status == LIBUSB_ERROR_NO_DEVICE)
 		{
@@ -60,16 +59,28 @@ void hidDriver::update_thread()
 			return;
 		}
 		
+		this->active = true;
+		double diff;
+		
 		do
 		{
-			libusb_handle_events(NULL);
+			libusb_handle_events_completed(NULL, NULL);
 			epicsTimeGetCurrent(&end);
-		} while (epicsTimeDiffInSeconds(&end, &start) < this->FREQUENCY);
+			
+			diff = epicsTimeDiffInSeconds(&end, &start);
+			
+			if (this->active and (this->FREQUENCY != 0.0) and (diff >= this->FREQUENCY))
+			{
+				libusb_cancel_transfer(xfr);
+			}
+		} while (this->active);
 		
-		epicsMutexLock(this->device_state);
+		if (diff < this->FREQUENCY)   { epicsThreadSleep(diff - this->FREQUENCY); }
+		
+		//epicsMutexLock(this->device_state);
 	}
 	
-	epicsMutexUnlock(this->device_state);
+	//epicsMutexUnlock(this->device_state);
 	this->printDebug(20, "Updating stopped\n");
 }
 
@@ -103,13 +114,15 @@ void hidDriver::receiveData(struct libusb_transfer* response)
 		this->loadDeviceInfo();
 	}
 	
-	else if (response->status == LIBUSB_TRANSFER_TIMED_OUT)
+	else if (response->status == LIBUSB_TRANSFER_TIMED_OUT or
+	         response->status == LIBUSB_TRANSFER_CANCELLED)
 	{
 		this->printDebug(1, "Connection timedout listening for input device report.\n");
 		
 		this->setStatuses(this->input_specification, asynTimeout);
 	}
 	
+	this->active = false;
 	libusb_free_transfer(response);
 }
 
