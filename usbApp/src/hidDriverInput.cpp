@@ -31,12 +31,13 @@ void hidDriver::update_thread()
 	
 	this->printDebug(20, "Starting update\n");
 	
-	//epicsMutexLock(this->device_state);
 	while (this->connected)
 	{
 		epicsTimeGetCurrent(&start);
 		
 		struct libusb_transfer *xfr = libusb_alloc_transfer(0);
+		
+		epicsMutexLock(this->device_state);
 		libusb_fill_interrupt_transfer( xfr, 
 		                                this->DEVICE, 
 		                                this->ENDPOINT_ADDRESS_IN, 
@@ -46,9 +47,9 @@ void hidDriver::update_thread()
 		                                this,
 		                                (int) (this->FREQUENCY * 1000));
 		
+		epicsMutexLock(this->input_state);
 		int status = libusb_submit_transfer(xfr);
-		
-		//epicsMutexUnlock(this->device_state);
+		epicsMutexUnlock(this->device_state);
 				
 		if (status == LIBUSB_ERROR_NO_DEVICE)
 		{
@@ -56,7 +57,8 @@ void hidDriver::update_thread()
 		
 			this->disconnect();
 			this->connect();
-			return;
+			epicsMutexUnlock(this->input_state);
+			break;
 		}
 		
 		this->active = true;
@@ -75,12 +77,10 @@ void hidDriver::update_thread()
 			}
 		} while (this->active);
 		
+		epicsMutexUnlock(this->input_state);
 		if (diff < this->FREQUENCY)   { epicsThreadSleep(diff - this->FREQUENCY); }
-		
-		//epicsMutexLock(this->device_state);
 	}
 	
-	//epicsMutexUnlock(this->device_state);
 	this->printDebug(20, "Updating stopped\n");
 }
 
