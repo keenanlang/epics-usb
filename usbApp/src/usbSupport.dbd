@@ -1,6 +1,5 @@
 registrar(usbConnectRegistrar)
 registrar(usbDriverRegistrar)
-registrar(usbTimeoutRegistrar)
 registrar(usbFrequencyRegistrar)
 registrar(usbDelayRegistrar)
 registrar(usbDebugRegistrar)

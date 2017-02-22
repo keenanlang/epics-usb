@@ -72,28 +72,6 @@ bool checkDriverArgs(const iocshArgBuf* args)
 }
 
 
-bool checkTimeoutArgs(const iocshArgBuf* args)
-{
-	if (args[0].sval == NULL)
-	{
-		printf("Error: no input given.\n");
-		return false;
-	}
-	else if (not port_used(args[0].sval))
-	{ 
-		printf("Error: couldn't find port specified.\n");
-		return false;
-	}
-	else if (args[1].ival < 0)
-	{
-		printf("Error: input cannot be negative.\n");
-		return false;
-	}
-	
-	return true;
-}
-
-
 bool checkFrequencyArgs(const iocshArgBuf* args)
 {
 	if (args[0].sval == NULL)
@@ -229,12 +207,6 @@ void usbConnectDevice( const char* port_name,
 }
 
 
-void usbSetTimeout(const char* port_name, int timeout)
-{
-	get_driver(port_name)->setTimeout(timeout);
-}
-
-
 void usbSetDelay(const char* port_name, double delay)
 {
 	get_driver(port_name)->setConnectDelay(delay);
@@ -285,9 +257,6 @@ extern "C"
 	static const iocshArg driver_arg1 = {"inputSpecFile",  iocshArgString};
 	static const iocshArg driver_arg2 = {"outputSpecFile", iocshArgString};
 
-	static const iocshArg tout_arg0   = {"portName",       iocshArgString};
-	static const iocshArg tout_arg1   = {"timeout",        iocshArgInt};
-
 	static const iocshArg freq_arg0   = {"portName",       iocshArgString};
 	static const iocshArg freq_arg1   = {"frequency",      iocshArgDouble};
 
@@ -307,7 +276,6 @@ extern "C"
 	
 	static const iocshArg* cx_args[]     = {&cx_arg0, &cx_arg1, &cx_arg2, &cx_arg3, &cx_arg4};
 	static const iocshArg* driver_args[] = {&driver_arg0, &driver_arg1, &driver_arg2};
-	static const iocshArg* tout_args[]   = {&tout_arg0, &tout_arg1};
     static const iocshArg* freq_args[]   = {&freq_arg0, &freq_arg1};
 	static const iocshArg* delay_args[]  = {&delay_arg0, &delay_arg1};
 	static const iocshArg* debug_args[]  = {&debug_arg0, &debug_arg1};
@@ -318,7 +286,6 @@ extern "C"
 
 	static const iocshFuncDef cx_func     = {"usbConnectDevice", 5, cx_args};
 	static const iocshFuncDef driver_func = {"usbCreateDriver", 3, driver_args};
-	static const iocshFuncDef tout_func   = {"usbSetTimeout", 2, tout_args};
 	static const iocshFuncDef freq_func   = {"usbSetFrequency", 2, freq_args};
 	static const iocshFuncDef delay_func  = {"usbSetDelay", 2, delay_args};
 	static const iocshFuncDef debug_func  = {"usbSetDebugLevel", 2, debug_args};
@@ -341,14 +308,6 @@ extern "C"
 		if (checkDriverArgs(args))
 		{
 			usbCreateDriver(args[0].sval, args[1].sval, args[2].sval);
-		}
-	}
-
-	static void call_tout_func(const iocshArgBuf* args)
-	{
-		if (checkTimeoutArgs(args))
-		{
-			usbSetTimeout(args[0].sval, args[1].ival);
 		}
 	}
 
@@ -395,7 +354,6 @@ extern "C"
 
 	static void usbConnectRegistrar(void)       { iocshRegister(&cx_func, call_cx_func); }
 	static void usbDriverRegistrar(void)        { iocshRegister(&driver_func, call_driver_func); }
-	static void usbTimeoutRegistrar(void)       { iocshRegister(&tout_func, call_tout_func); }
 	static void usbFrequencyRegistrar(void)     { iocshRegister(&freq_func, call_freq_func); }
 	static void usbDelayRegistrar(void)         { iocshRegister(&delay_func, call_delay_func); }
 	static void usbDebugRegistrar(void)         { iocshRegister(&debug_func, call_debug_func); }
@@ -406,7 +364,6 @@ extern "C"
 
 	epicsExportRegistrar(usbConnectRegistrar);
 	epicsExportRegistrar(usbDriverRegistrar);
-	epicsExportRegistrar(usbTimeoutRegistrar);
 	epicsExportRegistrar(usbFrequencyRegistrar);
 	epicsExportRegistrar(usbDelayRegistrar);
 	epicsExportRegistrar(usbDebugRegistrar);
