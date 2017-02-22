@@ -388,7 +388,7 @@ extern "C"
 	{
 		if (checkTransArgs(args))
 		{
-			usbShowIO(args[0].sval, args[0].ival);
+			usbShowIO(args[0].sval, args[1].ival);
 		}
 	}
 	
