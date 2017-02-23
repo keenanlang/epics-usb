@@ -77,6 +77,8 @@ class hidDriver : public asynPortDriver
 		bool connected;
 		bool active;
 		
+		struct libusb_transfer *xfr;
+		
 		uint16_t     VENDOR_ID;
 		uint16_t     PRODUCT_ID;
 		std::string  SERIAL_NUM;

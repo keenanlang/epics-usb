@@ -91,6 +91,11 @@ void hidDriver::disconnect()
 		this->printDebug(20, "Disconnecting device\n");
 		
 		this->setStatuses(asynError);
+
+		if (this->active)
+		{
+			libusb_cancel_transfer(this->xfr);
+		}
 		
 		/* 
 		* We don't want to delete our data while our update thread is still reading 

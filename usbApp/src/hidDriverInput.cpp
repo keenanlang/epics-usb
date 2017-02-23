@@ -36,9 +36,9 @@ void hidDriver::update_thread()
 	{
 		epicsTimeGetCurrent(&start);
 		
-		struct libusb_transfer *xfr = libusb_alloc_transfer(0);
+		this->xfr = libusb_alloc_transfer(0);
 		
-		libusb_fill_interrupt_transfer( xfr, 
+		libusb_fill_interrupt_transfer( this->xfr, 
 		                                this->DEVICE, 
 		                                this->ENDPOINT_ADDRESS_IN, 
 		                                this->state, 
@@ -47,7 +47,7 @@ void hidDriver::update_thread()
 		                                this,
 		                                this->TIMEOUT);
 		
-		int status = libusb_submit_transfer(xfr);
+		int status = libusb_submit_transfer(this->xfr);
 						
 		/*
 		* If the device is not there anymore, change state to disconnected 
@@ -57,7 +57,8 @@ void hidDriver::update_thread()
 		
 		if (status == LIBUSB_ERROR_NO_DEVICE)
 		{
-			libusb_free_transfer(xfr);
+			libusb_free_transfer(this->xfr);
+			this->xfr = NULL;
 		
 			this->printDebug(1, "Problem communicating with device, attempting reconnection.\n");
 			
@@ -66,10 +67,11 @@ void hidDriver::update_thread()
 			break;
 		}
 		
+		this->active = true;
+		
 		epicsMutexLock(this->input_state);
 		epicsMutexUnlock(this->device_state);
 		
-		this->active = true;
 		double diff;
 		
 		do
@@ -81,7 +83,7 @@ void hidDriver::update_thread()
 			
 			if (this->active and (this->FREQUENCY != 0.0) and (diff >= this->FREQUENCY))
 			{
-				libusb_cancel_transfer(xfr);
+				libusb_cancel_transfer(this->xfr);
 			}
 		} while (this->active);
 		
@@ -128,6 +130,7 @@ void hidDriver::receiveData(struct libusb_transfer* response)
 	
 	this->active = false;
 	libusb_free_transfer(response);
+	this->xfr = NULL;
 }
 
 
