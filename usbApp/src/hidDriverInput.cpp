@@ -31,13 +31,13 @@ void hidDriver::update_thread()
 	
 	this->printDebug(20, "Starting update\n");
 	
+	epicsMutexLock(this->device_state);
 	while (this->connected)
 	{
 		epicsTimeGetCurrent(&start);
 		
 		struct libusb_transfer *xfr = libusb_alloc_transfer(0);
 		
-		epicsMutexLock(this->device_state);
 		libusb_fill_interrupt_transfer( xfr, 
 		                                this->DEVICE, 
 		                                this->ENDPOINT_ADDRESS_IN, 
@@ -45,21 +45,29 @@ void hidDriver::update_thread()
 		                                this->TRANSFER_LENGTH_IN,
 		                                receive_data_callback,
 		                                this,
-		                                (int) (this->FREQUENCY * 1000));
+		                                this->TIMEOUT);
 		
-		epicsMutexLock(this->input_state);
 		int status = libusb_submit_transfer(xfr);
-		epicsMutexUnlock(this->device_state);
-				
+						
+		/*
+		* If the device is not there anymore, change state to disconnected 
+		* and then try to connect again. Reconnecting will spawn its own
+		* update thread, so we'll close out of this one.
+		*/
+		
 		if (status == LIBUSB_ERROR_NO_DEVICE)
 		{
 			libusb_free_transfer(xfr);
 		
+			this->printDebug(1, "Problem communicating with device, attempting reconnection.\n");
+			
 			this->disconnect();
 			this->connect();
-			epicsMutexUnlock(this->input_state);
 			break;
 		}
+		
+		epicsMutexLock(this->input_state);
+		epicsMutexUnlock(this->device_state);
 		
 		this->active = true;
 		double diff;
@@ -78,8 +86,13 @@ void hidDriver::update_thread()
 		} while (this->active);
 		
 		epicsMutexUnlock(this->input_state);
+		
 		if (diff < this->FREQUENCY)   { epicsThreadSleep(diff - this->FREQUENCY); }
+		
+		epicsMutexLock(this->device_state);
 	}
+	
+	epicsMutexUnock(this->device_state);
 	
 	this->printDebug(20, "Updating stopped\n");
 }
@@ -88,19 +101,6 @@ void hidDriver::update_thread()
 void hidDriver::receiveData(struct libusb_transfer* response)
 {
 	if (response->status == LIBUSB_TRANSFER_COMPLETED)    { this->updateParams(); }
-
-	/*
-	* If the device is not there anymore, change state to disconnected 
-	* and then try to connect again. Reconnecting will spawn its own
-	* update thread, so we'll close out of this one.
-	*/
-	if (response->status == LIBUSB_TRANSFER_NO_DEVICE)
-	{
-		this->printDebug(1, "Problem communicating with device, attempting reconnection.\n");
-		
-		this->disconnect();
-		this->connect();
-	}
 	
 	/*
 	* If the device sends us too much information, then something in our
@@ -114,12 +114,16 @@ void hidDriver::receiveData(struct libusb_transfer* response)
 		this->loadDeviceInfo();
 	}
 	
-	else if (response->status == LIBUSB_TRANSFER_TIMED_OUT or
-	         response->status == LIBUSB_TRANSFER_CANCELLED)
+	else if (response->status == LIBUSB_TRANSFER_TIMED_OUT)
 	{
 		this->printDebug(1, "Connection timedout listening for input device report.\n");
 		
 		this->setStatuses(this->input_specification, asynTimeout);
+	}
+	
+	else if (response->status == LIBUSB_TRANSFER_CANCELLED)
+	{
+		this->printDebug(20, "Transfer rate-limited by frequency.\n");
 	}
 	
 	this->active = false;

@@ -87,7 +87,9 @@ class hidDriver : public asynPortDriver
 		unsigned int TRANSFER_LENGTH_OUT;
 		unsigned int ENDPOINT_ADDRESS_OUT;
 		
-		unsigned int FREQUENCY;
+		unsigned int TIMEOUT;
+		
+		double FREQUENCY;
 		double TIME_BETWEEN_CHECKS;
 		
 		unsigned int DEBUG_LEVEL;

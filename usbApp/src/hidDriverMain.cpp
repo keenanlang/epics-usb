@@ -30,6 +30,7 @@ hidDriver::hidDriver(const char* port_name, DataLayout& input, DataLayout& outpu
 	input_specification(input), output_specification(output),
 	connected(false),
 	INTERFACE(0),
+	TIMEOUT(0),
 	FREQUENCY(DEFAULT_FREQUENCY),
 	TIME_BETWEEN_CHECKS(DEFAULT_CHECK),
 	DEBUG_LEVEL(0)
@@ -126,22 +127,35 @@ void hidDriver::setStatuses(DataLayout& spec, asynStatus status)
 }
 
 
+void hidDriver::setTimeout(int new_timeout)
+{
+	epicsMutexLock(this->device_state);
+		this->printDebug(10, "Setting Timeout: %dms -> %dms\n", this->TIMEOUT, new_timeout);
+	
+		this->TIMEOUT = new_timeout;
+	epicsMutexUnlock(this->device_state);
+}
+
 void hidDriver::setFrequency(double freq)
 {
-	this->printDebug(10, "Setting Frequency: %fhz -> %fhz\n", this->FREQUENCY, freq);
+	epicsMutexLock(this->device_state);
+		this->printDebug(10, "Setting Frequency: %fs -> %fs\n", this->FREQUENCY, freq);
 
-	this->FREQUENCY = freq;
+		this->FREQUENCY = freq;
+	epicsMutexUnlock(this->device_state);
 }
 
 
 void hidDriver::setConnectDelay(double delay)
 {
-	this->printDebug( 10, 
-	                  "Setting Connection Delay: %fs -> %fs\n", 
-	                  this->TIME_BETWEEN_CHECKS, 
-	                  delay);
+	epicsMutexLock(this->device_state);
+		this->printDebug( 10, 
+	                      "Setting Connection Delay: %fs -> %fs\n", 
+	                      this->TIME_BETWEEN_CHECKS, 
+	                      delay);
 	
-	this->TIME_BETWEEN_CHECKS = delay;
+		this->TIME_BETWEEN_CHECKS = delay;
+	epicsMutexUnlock(this->device_state);
 }
 
 
