@@ -38,7 +38,7 @@ class hidDriver : public asynPortDriver
 		
 		void receiveData(struct libusb_transfer* xfr);
 		
-		void printDebug(int level, std::string format, ...);
+		void printDebug(unsigned int level, std::string format, ...);
 		void setDebugLevel(int amt);
 		void setIOPrinting(int tf);
 		

@@ -91,7 +91,7 @@ void hidDriver::setDebugLevel(int amt)
 }
 
 
-void hidDriver::printDebug(int level, std::string format, ...)
+void hidDriver::printDebug(unsigned int level, std::string format, ...)
 {
 	va_list args;
 	
