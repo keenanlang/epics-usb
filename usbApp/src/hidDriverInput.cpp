@@ -92,7 +92,7 @@ void hidDriver::update_thread()
 		epicsMutexLock(this->device_state);
 	}
 	
-	epicsMutexUnock(this->device_state);
+	epicsMutexUnlock(this->device_state);
 	
 	this->printDebug(20, "Updating stopped\n");
 }

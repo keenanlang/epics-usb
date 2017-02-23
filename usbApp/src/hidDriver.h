@@ -25,6 +25,7 @@ class hidDriver : public asynPortDriver
 		hidDriver(const char* portName, DataLayout& spec_input, DataLayout& spec_output);			
 		~hidDriver();
 		
+		void setTimeout(int new_timeout);
 		void setFrequency(double new_frequency);
 		void setConnectDelay(double new_delay);
 		void setInterface(int new_interface);
