@@ -23,6 +23,8 @@ static void remove_driver(void* data)
 	hidDriver* driver = (hidDriver*) data;
 	
 	device_drivers.erase(std::string(driver->portName));
+	
+	delete driver;
 }
 
 static bool port_used(const char* port_name)    { return (get_driver(port_name) != NULL); }
