@@ -71,7 +71,6 @@ bool checkDriverArgs(const iocshArgBuf* args)
 	return true;
 }
 
-
 bool checkTimeoutArgs(const iocshArgBuf* args)
 {
 	if (args[0].sval == NULL)
@@ -92,7 +91,6 @@ bool checkTimeoutArgs(const iocshArgBuf* args)
 	
 	return true;
 }
-
 
 bool checkFrequencyArgs(const iocshArgBuf* args)
 {
@@ -229,12 +227,6 @@ void usbConnectDevice( const char* port_name,
 }
 
 
-void usbSetTimeout(const char* port_name, int timeout)
-{
-	get_driver(port_name)->setTimeout(timeout);
-}
-
-
 void usbSetDelay(const char* port_name, double delay)
 {
 	get_driver(port_name)->setConnectDelay(delay);
@@ -253,18 +245,14 @@ void usbSetDebugLevel(const char* port_name, int amt)
 }
 
 
+void usbSetTimeout( const char* port_name, int timeout)
+{
+	get_driver(port_name)->setFrequency(timeout);
+}
+
 void usbSetFrequency( const char* port_name, double frequency)
 {
-	double timing = 1.0 / frequency;
-	
-	/* 
-	 * If frequency is 0.0 or similar, timing will not be a correct number, however
-	 * a frequency of 0 is a valid amount. So, we'll take advantage of the IEEE
-	 * standard that states that comparisons with NaN will always return false.
-	 */
-	timing = (timing != timing) ? 0.0 : timing;
-	
-	get_driver(port_name)->setFrequency(timing);
+	get_driver(port_name)->setFrequency(frequency);
 }
 
 void usbShowIO(const char* port_name, int tf)
@@ -286,8 +274,8 @@ extern "C"
 	static const iocshArg driver_arg2 = {"outputSpecFile", iocshArgString};
 
 	static const iocshArg tout_arg0   = {"portName",       iocshArgString};
-	static const iocshArg tout_arg1   = {"timeout",        iocshArgInt};
-
+	static const iocshArg tout_arg1   = {"timeout",      iocshArgInt};
+	
 	static const iocshArg freq_arg0   = {"portName",       iocshArgString};
 	static const iocshArg freq_arg1   = {"frequency",      iocshArgDouble};
 
@@ -308,7 +296,7 @@ extern "C"
 	static const iocshArg* cx_args[]     = {&cx_arg0, &cx_arg1, &cx_arg2, &cx_arg3, &cx_arg4};
 	static const iocshArg* driver_args[] = {&driver_arg0, &driver_arg1, &driver_arg2};
 	static const iocshArg* tout_args[]   = {&tout_arg0, &tout_arg1};
-    static const iocshArg* freq_args[]   = {&freq_arg0, &freq_arg1};
+	static const iocshArg* freq_args[]   = {&freq_arg0, &freq_arg1};
 	static const iocshArg* delay_args[]  = {&delay_arg0, &delay_arg1};
 	static const iocshArg* debug_args[]  = {&debug_arg0, &debug_arg1};
 	static const iocshArg* inter_args[]  = {&inter_arg0, &inter_arg1};
@@ -343,7 +331,7 @@ extern "C"
 			usbCreateDriver(args[0].sval, args[1].sval, args[2].sval);
 		}
 	}
-
+	
 	static void call_tout_func(const iocshArgBuf* args)
 	{
 		if (checkTimeoutArgs(args))
@@ -388,14 +376,14 @@ extern "C"
 	{
 		if (checkTransArgs(args))
 		{
-			usbShowIO(args[0].sval, args[0].ival);
+			usbShowIO(args[0].sval, args[1].ival);
 		}
 	}
 	
 
 	static void usbConnectRegistrar(void)       { iocshRegister(&cx_func, call_cx_func); }
 	static void usbDriverRegistrar(void)        { iocshRegister(&driver_func, call_driver_func); }
-	static void usbTimeoutRegistrar(void)       { iocshRegister(&tout_func, call_tout_func); }
+	static void usbTimeoutRegistrar(void)     { iocshRegister(&tout_func, call_tout_func); }
 	static void usbFrequencyRegistrar(void)     { iocshRegister(&freq_func, call_freq_func); }
 	static void usbDelayRegistrar(void)         { iocshRegister(&delay_func, call_delay_func); }
 	static void usbDebugRegistrar(void)         { iocshRegister(&debug_func, call_debug_func); }

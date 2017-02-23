@@ -19,7 +19,7 @@ usbSetFrequency
 		The port name the driver is operating under
 
 	double frequency
-		The frequency (in hertz) you wish the driver to operate at.
+		The minimum amount of time (in seconds) between USB polls.
 
 
 usbSetDebugLevel
@@ -58,13 +58,16 @@ usbSetDelay
 
 
 usbSetTimeout
-	Sets the maximum amount of time a driver should wait for a usb data packet.
+	Sets the maximum amount of time a driver will wait for a USB event report from
+	the device before putting the drivers parameters into an timeout state. This is
+	most useful when you have the frequency set to 0.0 and want the IOC to act when
+	there has been a major lull in communications.
 
 	const char* port_name
 		The port name the driver is operating under
 
 	int timeout
-		The timeout
+		The timeout in microseconds.
 
 
 void usbConnectDevice

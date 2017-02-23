@@ -92,12 +92,6 @@ void hidDriver::disconnect()
 		
 		this->setStatuses(asynError);
 		
-		asynStatus temp;
-		
-		this->getParamStatus(15, &temp);
-		
-		printf("STATUS: %d\n", temp);
-		
 		/* 
 		* We don't want to delete our data while our update thread is still reading 
 		* through it 
