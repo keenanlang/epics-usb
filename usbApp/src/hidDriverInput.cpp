@@ -125,7 +125,7 @@ void hidDriver::receiveData(struct libusb_transfer* response)
 	
 	else if (response->status == LIBUSB_TRANSFER_CANCELLED)
 	{
-		this->printDebug(20, "Transfer rate-limited by frequency.\n");
+		this->printDebug(20, "Pending input transfer cancelled.\n");
 	}
 	
 	this->active = false;
