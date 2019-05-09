@@ -57,3 +57,14 @@ TEST_UPPER_HALF [59] >> 4 -> Int32 /0x0F
 
 #Definitions don't need to be in sequence
 TEST_BUTTON4 [13] -> UInt32Digital /0x10
+
+
+#The final parameter type is an Event
+
+#Some devices have a range of bytes that store a list of values that can
+#be in any order. For example, keyboards keep track of what buttons are
+#pressed and in which order. The Event type allows you to check a value
+#against all the bytes in the range for a match.
+
+#Check if any of the bytes in range equal 0x45 (F12 keypress) 
+TEST_F12_KEYPRESS [60, 63] -> Event /0x45

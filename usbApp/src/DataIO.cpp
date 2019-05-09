@@ -58,6 +58,9 @@ static void write_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocati
 static void read_STRING(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 static void write_STRING(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 
+static void read_EVENT(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+static void write_EVENT(asynPortDriver* callback, uint8_t* data, Allocation* layout);
+
 static void read_UNKNOWN(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 static void write_UNKNOWN(asynPortDriver* callback, uint8_t* data, Allocation* layout);
 
@@ -155,6 +158,7 @@ READ_FUNCTION getReadFunction(STORAGE_TYPE type)
 		case TYPE_FLOAT32ARRAY:     return read_FLOAT32ARRAY;
 		case TYPE_FLOAT64ARRAY:     return read_FLOAT64ARRAY;
 		case TYPE_STRING:           return read_STRING;
+		case TYPE_EVENT:            return read_EVENT;
 		default:                    return read_UNKNOWN;
 	}
 }
@@ -187,6 +191,7 @@ WRITE_FUNCTION getWriteFunction(STORAGE_TYPE type)
 		case TYPE_FLOAT32ARRAY:     return write_FLOAT32ARRAY;
 		case TYPE_FLOAT64ARRAY:     return write_FLOAT64ARRAY;
 		case TYPE_STRING:           return write_STRING;
+		case TYPE_EVENT:            return write_EVENT;
 		default:                    return write_UNKNOWN;
 	}
 }
@@ -225,7 +230,6 @@ static void write_INT16(asynPortDriver* callback, uint8_t* data, Allocation* lay
  * whatever is the most "leftward" (assuming big-endian) bit transferred and kept
  * will be extended.
  *
- * @param[in]  index       Index of the parameter to update.
  * @param[out] callback    Which driver is calling.
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
@@ -272,7 +276,6 @@ static void write_UINT16(asynPortDriver* callback, uint8_t* data, Allocation* la
  * shift over, then apply mask. Due to asyn not implementing unsigned ints in its
  * parameter types, the range of the parameter is actually limited to 31bits.
  *
- * @param[in]  index       Index of the parameter to update.
  * @param[out] callback    Which driver is calling.
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
@@ -293,7 +296,6 @@ static void write_UINT32(asynPortDriver* callback, uint8_t* data, Allocation* la
  * unsigned int, and apply mask. Due to how asynPortDriver treats digital 
  * params, there isn't a good way to handle shifts, so we don't.
  *
- * @param[in]  index       Index of the parameter to update.
  * @param[out] callback    Which driver is calling.
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
@@ -317,7 +319,6 @@ static void write_UINT32DIGITAL(asynPortDriver* callback, uint8_t* data, Allocat
  * Apply a shift to the given data, then apply the mask. If any bits are still
  * set, the parameter will be 1, otherwise 0.
  *
- * @param[in]  index       Index of the parameter to update.
  * @param[out] callback    Which driver is calling.
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
@@ -360,7 +361,6 @@ static void write_BOOLEAN(asynPortDriver* callback, uint8_t* data, Allocation* l
 /**
  * Treat up to 4 bytes as a 32bit float
  *
- * @param[in]  index       Index of the parameter to update.
  * @param[out] callback    Which driver is calling.
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
@@ -390,7 +390,6 @@ static void write_FLOAT32(asynPortDriver* callback, uint8_t* data, Allocation* l
 /**
  * Treat up to 8 bytes as a 64bit float
  *
- * @param[in]  index       Index of the parameter to update.
  * @param[out] callback    Which driver is calling.
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
@@ -417,7 +416,6 @@ static void write_FLOAT64(asynPortDriver* callback, uint8_t* data, Allocation* l
 /**
  * Copies up to 40 bytes as an ascii string, no mask, no shift.
  *
- * @param[in]  index       Index of the parameter to update.
  * @param[out] callback    Which driver is calling.
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
@@ -442,7 +440,6 @@ static void write_STRING(asynPortDriver* callback, uint8_t* data, Allocation* la
  * This is literally a copy of the array, while bitshifting and masking make 
  * sense here, it is too complicated to implement initally.
  *
- * @param[in]  index       Index of the parameter to update.
  * @param[out] callback    Which driver is calling.
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
@@ -463,7 +460,6 @@ static void write_INT8ARRAY(asynPortDriver* callback, uint8_t* data, Allocation*
  * This is literally a copy of the array, while bitshifting and masking make 
  * sense here, it is too complicated to implement initally.
  *
- * @param[in]  index       Index of the parameter to update.
  * @param[out] callback    Which driver is calling.
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
@@ -486,7 +482,6 @@ static void write_INT16ARRAY(asynPortDriver* callback, uint8_t* data, Allocation
  * This is literally a copy of the array, while bitshifting and masking make 
  * sense here, it is too complicated to implement initally.
  *
- * @param[in]  index       Index of the parameter to update.
  * @param[out] callback    Which driver is calling.
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
@@ -508,7 +503,6 @@ static void write_INT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation
 /**
  * This is literally a copy of the array, no bitshift or mask
  *
- * @param[in]  index       Index of the parameter to update.
  * @param[out] callback    Which driver is calling.
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
@@ -530,7 +524,6 @@ static void write_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocati
 /**
  * This is literally a copy of the array, no bitshift or mask
  *
- * @param[in]  index       Index of the parameter to update.
  * @param[out] callback    Which driver is calling.
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
@@ -548,6 +541,35 @@ static void read_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocatio
 
 static void write_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout) { /* To Do */ }
 
+
+/**
+ * Check if the mask value is within the byte range
+ *
+ * @param[out] callback    Which driver is calling.
+ * @param[in]  data        A pointer to the start of the bytes to be interpreted.
+ * @param[in]  layout      Other information about how to interpret the parameter.
+ */
+static void read_EVENT(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+	unsigned len = layout->length;
+	epicsUInt32 found = 0;
+	
+	for (unsigned index = 0; index < len; index += 1)
+	{
+		if (data[index] == layout->mask)
+		{
+			found = 1;
+			break;
+		}
+	}
+	
+	callback->setIntegerParam(layout->index, found);
+}
+
+static void write_EVENT(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+{
+
+}
 
 /**
  * Purposefully does nothing

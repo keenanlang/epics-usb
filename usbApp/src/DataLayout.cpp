@@ -200,6 +200,10 @@ void type_from_string(std::string type_input, STORAGE_TYPE* output_location)
 	else if (type_input == "Float64Array" || 
 	         type_input == "float64array")
 		{ *output_location = TYPE_FLOAT64ARRAY; }
+
+	else if (type_input == "Event" ||
+	         type_input == "event")
+		{ *output_location = TYPE_EVENT; }
 		
 	else
 		{ *output_location = TYPE_UNKNOWN; }
@@ -223,6 +227,7 @@ asynParamType asyn_from_type(STORAGE_TYPE type_input)
 		case TYPE_UINT16:
 		case TYPE_UINT32:
 		case TYPE_BOOLEAN:
+		case TYPE_EVENT:
 			return asynParamInt32;
 			
 		case TYPE_UINT32DIGITAL:
@@ -266,6 +271,7 @@ epicsUInt32 get_type_mask(STORAGE_TYPE type_input)
 		case TYPE_UINT16:
 		case TYPE_UINT32:
 		case TYPE_BOOLEAN:
+		case TYPE_EVENT:
 			return asynInt32Mask;
 		
 		case TYPE_UINT32DIGITAL:
