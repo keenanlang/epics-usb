@@ -13,9 +13,15 @@ SUPPORT=/APSshare/epics/synApps_5_7/support
 -include $(TOP)/../configure/SUPPORT.$(EPICS_HOST_ARCH)
 
 
-ASYN=$(SUPPORT)/asyn4-21
+ASYN=$(SUPPORT)/asyn-4-21
 USB=$(SUPPORT)/usb-1-0
 
 # EPICS_BASE usually appears last so other apps can override stuff:
-EPICS_BASE=/APSshare/epics/base-3.14.12.4
+EPICS_BASE=/APSshare/epics/base-3.14.12.3
 -include $(TOP)/../configure/EPICS_BASE.$(EPICS_HOST_ARCH)
+
+# These lines allow developers to override these RELEASE settings
+# without having to modify this file directly.
+-include $(TOP)/../RELEASE.local
+-include $(TOP)/../RELEASE.$(EPICS_HOST_ARCH).local
+-include $(TOP)/configure/RELEASE.local
