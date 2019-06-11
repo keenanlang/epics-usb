@@ -1,0 +1,29 @@
+#Logitech F710 Wireless Gamepad (XInput mode)  Vendor: 0x046D Product: 0xC21F
+
+START_PRESSED       [2]  ->  Bool    /0x10
+BACK_PRESSED        [2]  ->  Bool    /0x20
+
+LB_PRESSED          [3]  ->  Bool    /0x01
+L3_PRESSED          [2]  ->  Bool    /0x40
+
+RR_PRESSED          [3]  ->  Bool    /0x02
+R3_PRESSED          [2]  ->  Bool    /0x80
+
+UP_PRESSED          [2]  ->  Bool    /0x01
+RIGHT_PRESSED       [2]  ->  Bool    /0x08
+DOWN_PRESSED        [2]  ->  Bool    /0x02
+LEFT_PRESSED        [2]  ->  Bool    /0x04
+
+A_PRESSED           [3]  ->  Bool    /0x10
+B_PRESSED           [3]  ->  Bool    /0x20
+X_PRESSED           [3]  ->  Bool    /0x40
+Y_PRESSED           [3]  ->  Bool    /0x80
+
+L2_STATE            [4]  ->  UInt8
+R2_STATE            [5]  ->  UInt8
+
+LEFTLR_STATE        [6,7]       ->  Int16
+LEFTUD_STATE        [8,9]       ->  Int16
+RIGHTLR_STATE       [10,11]     ->  Int16
+RIGHTUD_STATE       [12,13]     ->  Int16
+

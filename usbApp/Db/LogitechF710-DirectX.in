@@ -1,0 +1,33 @@
+#Logitech F710 Wireless Gamepad (DirectX mode) Vendor: 0x046D Product: 0xC219
+
+LEFTLR_STATE        [1]  ->  UInt8
+LEFTUD_STATE        [2]  ->  UInt8
+RIGHTLR_STATE       [3]  ->  UInt8
+RIGHTUD_STATE       [4]  ->  UInt8
+
+DPAD_STATE          [5]  ->  UInt8   /0x0F
+
+A_PRESSED           [5]  ->  Bool    /0x20
+B_PRESSED           [5]  ->  Bool    /0x40
+X_PRESSED           [5]  ->  Bool    /0x10
+Y_PRESSED           [5]  ->  Bool    /0x80
+
+LB_PRESSED          [6]  ->  Bool    /0x01
+LT_PRESSED          [6]  ->  Bool    /0x04
+L3_PRESSED          [6]  ->  Bool    /0x40
+
+RB_PRESSED          [6]  ->  Bool    /0x02
+RT_PRESSED          [6]  ->  Bool    /0x08
+R3_PRESSED          [6]  ->  Bool    /0x80
+
+START_PRESSED       [6]  ->  Bool    /0x20
+BACK_PRESSED        [6]  ->  Bool    /0x10
+
+
+
+
+
+
+
+
+
