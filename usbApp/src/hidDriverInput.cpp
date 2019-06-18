@@ -138,6 +138,8 @@ void hidDriver::updateParams()
 {	
 	if (this->print_transfer)
 	{
+		printf("%s: ", this->portName);
+	
 		for (unsigned index = 0; index < this->TRANSFER_LENGTH_IN; index += 1)
 		{
 			printf("%02X ", this->state[index]);
