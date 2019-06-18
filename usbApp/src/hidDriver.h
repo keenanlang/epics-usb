@@ -54,7 +54,7 @@ class hidDriver : public asynPortDriver
 		void startUpdating();
 		
 		void releaseInterface();
-		void claimInterface();
+		int  claimInterface();
 		
 		void createParams(DataLayout& spec);
 		

@@ -12,39 +12,12 @@
 const int DIRECTION_INPUT = 0x80;
 
 /*
- * Many devices don't provide unique serial numbers. So to keep different
- * drivers from connecting to the same device we will keep a record of all
- * devices currently claimed by HID_Drivers
- */
-std::list<libusb_device*> claimed;
-
-
-/*
- * Each of the HID_Drivers will be running their own connect/disconnect
- * and update threads, so we need a lock to keep the integrity of the
- * list of claimed devices.
+ * Each of the hidDrivers will be running their own connect/disconnect
+ * threads, we need to be able to maintain integrity of the list of
+ * available USB devices.
  */
 epicsMutexId mylock = epicsMutexCreate();
 
-
-/**
- * See if a given device has been claimed by a driver or not
- *
- * @param[in]  check    The usb device that may already be claimed
- *
- * @return  true if there already exists a driver for that device, 
- * false otherwise
- */
-bool contains(libusb_device* check)
-{	
-	for(std::list<libusb_device*>::iterator any_device = claimed.begin();
-	    any_device != claimed.end(); ++any_device)
-	{
-		if(*any_device == check) return true;
-	}
-	
-	return false;
-}
 
 void connect_thread_callback(void* arg)
 {
@@ -109,10 +82,7 @@ void hidDriver::disconnect()
 			this->last_state = NULL;
 		epicsMutexUnlock(this->input_state);
 			
-		epicsMutexLock(mylock);
-			/* We no longer claim exclusive rights to the usb device */
-			claimed.remove(libusb_get_device(DEVICE));
-			
+		epicsMutexLock(mylock);			
 			this->releaseInterface();
 				
 			libusb_close(DEVICE);
@@ -155,7 +125,7 @@ void hidDriver::loadDeviceInfo()
 		/* Input Endpoint */
 		if (not found_input and (endpoint_info & (LIBUSB_ENDPOINT_IN | LIBUSB_TRANSFER_TYPE_INTERRUPT)))
 		{			
-			loadInputData(interface.endpoint[index]);
+			this->loadInputData(interface.endpoint[index]);
 			
 			need_init = true;
 			found_input = true;
@@ -173,7 +143,7 @@ void hidDriver::loadDeviceInfo()
 }
 
 
-void hidDriver::claimInterface()
+int hidDriver::claimInterface()
 {
 	this->printDebug(20, "Claiming interface from kernel: %d\n", this->INTERFACE);
 	
@@ -184,7 +154,7 @@ void hidDriver::claimInterface()
 	 * isn't attached.
 	 */
 	libusb_detach_kernel_driver(DEVICE, INTERFACE);
-	libusb_claim_interface(DEVICE, INTERFACE);  
+	return libusb_claim_interface(DEVICE, INTERFACE);
 }
 
 
@@ -238,17 +208,6 @@ void hidDriver::connect_thread()
 			 */
 			epicsThreadSleep(TIME_BETWEEN_CHECKS);
 		}
-		else
-		{
-			printf("connection (0x%04X:0x%04X) succeeded\n", this->VENDOR_ID, this->PRODUCT_ID);
-			
-			this->connected = true;
-			
-			this->loadDeviceInfo();
-			this->claimInterface();
-			this->setStatuses(asynSuccess);
-			this->startUpdating();
-		}
 	}
 	epicsMutexUnlock(this->device_state);
 }
@@ -275,11 +234,33 @@ void  hidDriver::findDevice()
 	{
 		libusb_device* dev = connected_devices[index];
 		
-		if (this->isMatch(dev) and not contains(dev))
+		if (this->isMatch(dev))
 		{
-			int stat = libusb_open(dev, &DEVICE);
+			int status = libusb_open(dev, &DEVICE);
 			
-			if (! stat)    { claimed.push_back(dev); }
+			if (status)
+			{ 
+				this->printDebug(20, "Found matching device, but error when opening connection: %d\n", status);
+				this->printDebug(20, "Continuing looking through list\n");
+				continue;
+			}
+			
+			status = this->claimInterface();
+			
+			if (status)
+			{
+				this->printDebug(20, "Found matching device, but error when claiming: %d\n", status);
+				this->printDebug(20, "Continuing looking through list\n");
+				continue;
+			}
+			
+			this->loadDeviceInfo();
+			this->setStatuses(asynSuccess);
+			this->startUpdating();
+			
+			this->connected = true;
+			
+			printf("connection (0x%04X:0x%04X) succeeded\n", this->VENDOR_ID, this->PRODUCT_ID);
 			
 			break;
 		}
