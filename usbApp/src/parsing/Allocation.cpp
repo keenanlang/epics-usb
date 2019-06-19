@@ -1,6 +1,7 @@
 #include "Allocation.h"
-#include "DataIO.h"
 #include "StringUtils.h"
+
+bool type_from_string(std::string type_input, DataType* output);
 
 Allocation::Allocation(std::string toparse)
 {

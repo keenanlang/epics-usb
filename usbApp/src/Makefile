@@ -15,10 +15,13 @@ usb_SRCS += hidDriverMain.cpp
 usb_SRCS += hidDriverConnect.cpp
 usb_SRCS += hidDriverInput.cpp
 usb_SRCS += hidDriverOutput.cpp
+usb_SRCS += DataIO.cpp
+
+SRC_DIRS += $(TOP)/usbApp/src/parsing
+USR_INCLUDES += $(TOP)/usbApp/src/parsing
 
 usb_SRCS += StringUtils.cpp
 usb_SRCS += DataLayout.cpp
-usb_SRCS += DataIO.cpp
 usb_SRCS += Allocation.cpp
 
 usb_LIBS += asyn 
