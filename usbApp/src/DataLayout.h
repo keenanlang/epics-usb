@@ -3,35 +3,18 @@
 
 #include <vector>
 #include <string>
+#include <stdint.h>
 
 #include <asynPortDriver.h>
 #include <epicsTypes.h>
 
-enum STORAGE_TYPE
-{
-	TYPE_UNKNOWN,
-	TYPE_INT8,
-	TYPE_INT16,
-	TYPE_INT32,
-	TYPE_UINT8,
-	TYPE_UINT16,
-	TYPE_UINT32,
-	TYPE_UINT32DIGITAL,
-	TYPE_BOOLEAN,
-	TYPE_FLOAT32,
-	TYPE_FLOAT64,
-	TYPE_STRING,
-	TYPE_INT8ARRAY,
-	TYPE_INT16ARRAY,
-	TYPE_INT32ARRAY,
-	TYPE_FLOAT32ARRAY,
-	TYPE_FLOAT64ARRAY,
-	TYPE_EVENT
-};
+#include "DataIO.h"
 
 /** Type representing a single asyn parameter */
-typedef struct Allocation
+class Allocation
 {
+	public:
+	
 	/** Asyn Param Name */
 	std::string name;
 	
@@ -50,9 +33,7 @@ typedef struct Allocation
 	/** Parameter Index */
 	int index;
 	
-	/** Asyn Type to convert to */
-	STORAGE_TYPE type;
-	
+	DataType* type;
 	
 	Allocation(): name(""),
 	              length(0),
@@ -60,8 +41,8 @@ typedef struct Allocation
 	              mask(0xFFFFFFFF),
 	              shift(0),
 	              index(0),
-	              type(TYPE_UNKNOWN) {}
-} Allocation;
+	              type(NULL) {}
+};
 
 
 class DataLayout
@@ -83,13 +64,5 @@ class DataLayout
 		int rupt_mask;
 		std::vector<Allocation> storage;
 };
-
-
-/* Read in type from specification file to OUTPUT_TYPE */
-void type_from_string(std::string type_input, STORAGE_TYPE* output_location);
-asynParamType asyn_from_type(STORAGE_TYPE type_input);
-
-epicsUInt32 get_type_mask(STORAGE_TYPE type_input);
-
 
 #endif

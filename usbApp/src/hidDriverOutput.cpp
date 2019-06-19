@@ -1,5 +1,4 @@
 #include "hidDriver.h"
-#include "DataIO.h"
 
 void hidDriver::loadOutputData(const struct libusb_endpoint_descriptor endpoint)
 {
@@ -31,9 +30,7 @@ asynStatus hidDriver::sendOutputReport()
 		{
 			Allocation* layout = this->output_specification.get(index);
 			
-			WRITE_FUNCTION tocall = getWriteFunction(layout->type);
-			
-			tocall(this, &data[layout->start], layout);
+			layout->type->write(this, &data[layout->start], layout);
 		}
 	
 		int errno = libusb_interrupt_transfer( this->DEVICE, 

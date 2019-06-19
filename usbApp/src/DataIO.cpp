@@ -3,67 +3,8 @@
 
 #include <epicsTypes.h>
 
+#include "DataLayout.h"
 #include "DataIO.h"
-
-static int num_bits(unsigned mask);
-
-static void read_signed(asynPortDriver* callback, uint8_t* data, Allocation* layout, int max_bytes);
-static void read_unsigned(asynPortDriver* callback, uint8_t* data, Allocation* layout, int max_bytes);
-
-static void read_INT8(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_INT8(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_INT16(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_INT16(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_INT32(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_INT32(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_UINT8(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_UINT8(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_UINT16(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_UINT16(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_UINT32(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_UINT32(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_UINT32DIGITAL(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_UINT32DIGITAL(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_BOOLEAN(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_BOOLEAN(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_FLOAT32(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_FLOAT32(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_FLOAT64(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_FLOAT64(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_INT8ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_INT8ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_INT16ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_INT16ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_INT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_INT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_STRING(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_STRING(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_EVENT(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_EVENT(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
-static void read_UNKNOWN(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-static void write_UNKNOWN(asynPortDriver* callback, uint8_t* data, Allocation* layout);
-
 
 static int num_bits(unsigned mask)
 {
@@ -111,11 +52,13 @@ static void read_unsigned(asynPortDriver* callback, uint8_t* data, Allocation* l
 	callback->setIntegerParam(layout->index, utemp);
 }
 
-static void write_int(asynPortDriver* callback, uint8_t* data, Allocation* layout, int max_bytes)
+static void write_int(asynPortDriver* callback, uint8_t* data, void* alloc, int max_bytes)
 {
 	epicsInt32 temp;
 	epicsUInt32 value;
 	epicsInt32 current;
+	
+	Allocation* layout = (Allocation*) alloc;
 	
 	callback->getIntegerParam(layout->index, &temp);
 	
@@ -130,94 +73,27 @@ static void write_int(asynPortDriver* callback, uint8_t* data, Allocation* layou
 	memcpy(data, &current, std::min(max_bytes, (int) layout->length));
 }
 
-/**
- * Which function to use to parse data coming in from the usb device based
- * upon what output type the data is being processed as.
- *
- * @param[in]  type    The output type of the parameter
- *
- * @return  The function used to process data as the given type.
- */
-READ_FUNCTION getReadFunction(STORAGE_TYPE type)
+
+void read_INT8(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
-	switch(type)
-	{
-		case TYPE_INT8:             return read_INT8;
-		case TYPE_INT16:            return read_INT16;
-		case TYPE_INT32:            return read_INT32;
-		case TYPE_UINT8:            return read_UINT8;
-		case TYPE_UINT16:           return read_UINT16;
-		case TYPE_UINT32:           return read_UINT32;
-		case TYPE_UINT32DIGITAL:    return read_UINT32DIGITAL;
-		case TYPE_BOOLEAN:          return read_BOOLEAN;
-		case TYPE_FLOAT32:          return read_FLOAT32;
-		case TYPE_FLOAT64:          return read_FLOAT64;
-		case TYPE_INT8ARRAY:        return read_INT8ARRAY;
-		case TYPE_INT16ARRAY:       return read_INT16ARRAY;
-		case TYPE_INT32ARRAY:       return read_INT32ARRAY;
-		case TYPE_FLOAT32ARRAY:     return read_FLOAT32ARRAY;
-		case TYPE_FLOAT64ARRAY:     return read_FLOAT64ARRAY;
-		case TYPE_STRING:           return read_STRING;
-		case TYPE_EVENT:            return read_EVENT;
-		default:                    return read_UNKNOWN;
-	}
+	read_signed(callback, data, (Allocation*) alloc, 1);
 }
 
-/**
- * Which function to use to push data out to the usb device based
- * upon what output type the data is being processed as.
- *
- * @param[in]  type    The output type of the parameter
- *
- * @return  The function used to process data as the given type.
- */
-WRITE_FUNCTION getWriteFunction(STORAGE_TYPE type)
+void write_INT8(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
-	switch(type)
-	{
-		case TYPE_INT8:             return write_INT8;
-		case TYPE_INT16:            return write_INT16;
-		case TYPE_INT32:            return write_INT32;
-		case TYPE_UINT8:            return write_UINT8;
-		case TYPE_UINT16:           return write_UINT16;
-		case TYPE_UINT32:           return write_UINT32;
-		case TYPE_UINT32DIGITAL:    return write_UINT32DIGITAL;
-		case TYPE_BOOLEAN:          return write_BOOLEAN;
-		case TYPE_FLOAT32:          return write_FLOAT32;
-		case TYPE_FLOAT64:          return write_FLOAT64;
-		case TYPE_INT8ARRAY:        return write_INT8ARRAY;
-		case TYPE_INT16ARRAY:       return write_INT16ARRAY;
-		case TYPE_INT32ARRAY:       return write_INT32ARRAY;
-		case TYPE_FLOAT32ARRAY:     return write_FLOAT32ARRAY;
-		case TYPE_FLOAT64ARRAY:     return write_FLOAT64ARRAY;
-		case TYPE_STRING:           return write_STRING;
-		case TYPE_EVENT:            return write_EVENT;
-		default:                    return write_UNKNOWN;
-	}
+	write_int(callback, data, (Allocation*) alloc, 1);
 }
 
 
 
-static void read_INT8(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_INT16(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
-	read_signed(callback, data, layout, 1);
+	read_signed(callback, data, (Allocation*) alloc, 2);
 }
 
-static void write_INT8(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void write_INT16(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
-	write_int(callback, data, layout, 1);
-}
-
-
-
-static void read_INT16(asynPortDriver* callback, uint8_t* data, Allocation* layout)
-{
-	read_signed(callback, data, layout, 2);
-}
-
-static void write_INT16(asynPortDriver* callback, uint8_t* data, Allocation* layout)
-{
-	write_int(callback, data, layout, 2);
+	write_int(callback, data, (Allocation*) alloc, 2);
 }
 
 
@@ -234,37 +110,37 @@ static void write_INT16(asynPortDriver* callback, uint8_t* data, Allocation* lay
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_INT32(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_INT32(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
-	read_signed(callback, data, layout, 4);
+	read_signed(callback, data, (Allocation*) alloc, 4);
 }
 
-static void write_INT32(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void write_INT32(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
-	write_int(callback, data, layout, 4);
-}
-
-
-
-static void read_UINT8(asynPortDriver* callback, uint8_t* data, Allocation* layout)
-{
-	read_unsigned(callback, data, layout, 1);
-}
-
-static void write_UINT8(asynPortDriver* callback, uint8_t* data, Allocation* layout)
-{
-	write_int(callback, data, layout, 1);
+	write_int(callback, data, (Allocation*) alloc, 4);
 }
 
 
-static void read_UINT16(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+
+void read_UINT8(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
-	read_unsigned(callback, data, layout, 2);
+	read_unsigned(callback, data, (Allocation*) alloc, 1);
 }
 
-static void write_UINT16(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void write_UINT8(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
-	write_int(callback, data, layout, 2);
+	write_int(callback, data, (Allocation*) alloc, 1);
+}
+
+
+void read_UINT16(asynPortDriver* callback, uint8_t* data, void* alloc)
+{
+	read_unsigned(callback, data, (Allocation*) alloc, 2);
+}
+
+void write_UINT16(asynPortDriver* callback, uint8_t* data, void* alloc)
+{
+	write_int(callback, data, (Allocation*) alloc, 2);
 }
 
 
@@ -280,14 +156,14 @@ static void write_UINT16(asynPortDriver* callback, uint8_t* data, Allocation* la
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_UINT32(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_UINT32(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
-	read_unsigned(callback, data, layout, 4);
+	read_unsigned(callback, data, (Allocation*) alloc, 4);
 }
 
-static void write_UINT32(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void write_UINT32(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
-	write_int(callback, data, layout, 4);
+	write_int(callback, data, (Allocation*) alloc, 4);
 }
 
 
@@ -300,18 +176,20 @@ static void write_UINT32(asynPortDriver* callback, uint8_t* data, Allocation* la
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_UINT32DIGITAL(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_UINT32DIGITAL(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
 	epicsUInt32 utemp = 0;
+	
+	Allocation* layout = (Allocation*) alloc;
 
 	memcpy(&utemp, data, std::min(4, (int) layout->length));
 
 	callback->setUIntDigitalParam(layout->index, utemp, layout->mask);
 }
 
-static void write_UINT32DIGITAL(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void write_UINT32DIGITAL(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
-	write_int(callback, data, layout, 4);
+	write_int(callback, data, (Allocation*) alloc, 4);
 }
 
 
@@ -323,9 +201,11 @@ static void write_UINT32DIGITAL(asynPortDriver* callback, uint8_t* data, Allocat
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_BOOLEAN(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_BOOLEAN(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
 	epicsUInt32 utemp = 0;
+	
+	Allocation* layout = (Allocation*) alloc;
 	
 	memcpy(&utemp, data, std::min(4, (int) layout->length));
 	
@@ -336,11 +216,13 @@ static void read_BOOLEAN(asynPortDriver* callback, uint8_t* data, Allocation* la
 	callback->setIntegerParam(layout->index, utemp);
 }
 
-static void write_BOOLEAN(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void write_BOOLEAN(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
 	epicsInt32 temp = 0;
 	epicsUInt32 value = 0;
 	epicsUInt32 current = 0;
+	
+	Allocation* layout = (Allocation*) alloc;
 	
 	callback->getIntegerParam(layout->index, &temp);
 	memcpy(&current, data, std::min(4, (int) layout->length));
@@ -365,8 +247,10 @@ static void write_BOOLEAN(asynPortDriver* callback, uint8_t* data, Allocation* l
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_FLOAT32(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_FLOAT32(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
+	Allocation* layout = (Allocation*) alloc;
+	
 	epicsFloat32 ftemp = 0.0;
 
 	memcpy(&ftemp, data, std::min(4, (int) layout->length));
@@ -374,10 +258,12 @@ static void read_FLOAT32(asynPortDriver* callback, uint8_t* data, Allocation* la
 	callback->setDoubleParam(layout->index, (epicsFloat64) ftemp);
 }
 
-static void write_FLOAT32(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void write_FLOAT32(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
 	epicsFloat64 temp;
 	epicsFloat32 value;
+	
+	Allocation* layout = (Allocation*) alloc;
 	
 	callback->getDoubleParam(layout->index, &temp);
 	
@@ -394,8 +280,10 @@ static void write_FLOAT32(asynPortDriver* callback, uint8_t* data, Allocation* l
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_FLOAT64(asynPortDriver* callback, uint8_t* data, Allocation* layout)
-{						
+void read_FLOAT64(asynPortDriver* callback, uint8_t* data, void* alloc)
+{
+	Allocation* layout = (Allocation*) alloc;
+
 	epicsFloat64 ftemp = 0.0;
 
 	memcpy(&ftemp, data, std::min(8, (int) layout->length));
@@ -403,9 +291,11 @@ static void read_FLOAT64(asynPortDriver* callback, uint8_t* data, Allocation* la
 	callback->setDoubleParam(layout->index, ftemp);
 }
 
-static void write_FLOAT64(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void write_FLOAT64(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
 	epicsFloat64 value;
+	
+	Allocation* layout = (Allocation*) alloc;
 	
 	callback->getDoubleParam(layout->index, &value);
 	
@@ -420,8 +310,10 @@ static void write_FLOAT64(asynPortDriver* callback, uint8_t* data, Allocation* l
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_STRING(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_STRING(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
+	Allocation* layout = (Allocation*) alloc;
+	
 	unsigned length = std::min(40, (int) (layout->length));
 	
 	epicsInt8 buffer[length];
@@ -431,8 +323,9 @@ static void read_STRING(asynPortDriver* callback, uint8_t* data, Allocation* lay
 	callback->setStringParam(layout->index, (const char*) buffer);
 }
 
-static void write_STRING(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void write_STRING(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
+	Allocation* layout = (Allocation*) alloc;
 	callback->getStringParam(layout->index, std::min(40, (int) layout->length), (char*) data);
 }
 
@@ -444,8 +337,10 @@ static void write_STRING(asynPortDriver* callback, uint8_t* data, Allocation* la
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_INT8ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_INT8ARRAY(asynPortDriver* callback, uint8_t* data, void* alloc)
 {	
+	Allocation* layout = (Allocation*) alloc;
+
 	epicsInt8 atemp[layout->length];
 	
 	memcpy(atemp, data, layout->length);
@@ -453,7 +348,7 @@ static void read_INT8ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* 
 	callback->doCallbacksInt8Array(atemp, layout->length, layout->index, 0);
 }
 
-static void write_INT8ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout) { /* To Do */ }
+void write_INT8ARRAY(asynPortDriver* callback, uint8_t* data, void* alloc) { /* To Do */ }
 
 
 /**
@@ -464,8 +359,10 @@ static void write_INT8ARRAY(asynPortDriver* callback, uint8_t* data, Allocation*
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_INT16ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_INT16ARRAY(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
+	Allocation* layout = (Allocation*) alloc;
+	
 	unsigned len = layout->length >> 1;
 	
 	epicsInt16 atemp[len];
@@ -475,7 +372,7 @@ static void read_INT16ARRAY(asynPortDriver* callback, uint8_t* data, Allocation*
 	callback->doCallbacksInt16Array(atemp, len, layout->index, 0);
 }
 
-static void write_INT16ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout) { /* To Do */ }
+void write_INT16ARRAY(asynPortDriver* callback, uint8_t* data, void* alloc) { /* To Do */ }
 
 
 /**
@@ -486,8 +383,10 @@ static void write_INT16ARRAY(asynPortDriver* callback, uint8_t* data, Allocation
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_INT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_INT32ARRAY(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
+	Allocation* layout = (Allocation*) alloc;
+	
 	unsigned len = layout->length >> 2;
 						
 	epicsInt32 atemp[len];
@@ -497,7 +396,7 @@ static void read_INT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation*
 	callback->doCallbacksInt32Array(atemp, len, layout->index, 0);
 }
 
-static void write_INT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout) { /* To Do */ }
+void write_INT32ARRAY(asynPortDriver* callback, uint8_t* data, void* alloc) { /* To Do */ }
 
 
 /**
@@ -507,8 +406,10 @@ static void write_INT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, void* alloc)
 {	
+	Allocation* layout = (Allocation*) alloc;
+
 	unsigned len = layout->length >> 2;
 	
 	epicsFloat32 atemp[len];
@@ -518,7 +419,7 @@ static void read_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocatio
 	callback->doCallbacksFloat32Array(atemp, len, layout->index, 0);
 }
 
-static void write_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout) { /* To Do */ }
+void write_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, void* alloc) { /* To Do */ }
 
 
 /**
@@ -528,8 +429,10 @@ static void write_FLOAT32ARRAY(asynPortDriver* callback, uint8_t* data, Allocati
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
+	Allocation* layout = (Allocation*) alloc;
+	
 	unsigned len = layout->length >> 3;
 						
 	epicsFloat64 atemp[len];
@@ -539,7 +442,7 @@ static void read_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocatio
 	callback->doCallbacksFloat64Array(atemp, len, layout->index, 0);
 }
 
-static void write_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocation* layout) { /* To Do */ }
+void write_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, void* alloc) { /* To Do */ }
 
 
 /**
@@ -549,8 +452,10 @@ static void write_FLOAT64ARRAY(asynPortDriver* callback, uint8_t* data, Allocati
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_EVENT(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_EVENT(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
+	Allocation* layout = (Allocation*) alloc;
+	
 	unsigned len = layout->length;
 	epicsUInt32 found = 0;
 	
@@ -566,7 +471,7 @@ static void read_EVENT(asynPortDriver* callback, uint8_t* data, Allocation* layo
 	callback->setIntegerParam(layout->index, found);
 }
 
-static void write_EVENT(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void write_EVENT(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
 
 }
@@ -579,12 +484,12 @@ static void write_EVENT(asynPortDriver* callback, uint8_t* data, Allocation* lay
  * @param[in]  data        A pointer to the start of the bytes to be interpreted.
  * @param[in]  layout      Other information about how to interpret the parameter.
  */
-static void read_UNKNOWN(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void read_UNKNOWN(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
 	
 }
 
-static void write_UNKNOWN(asynPortDriver* callback, uint8_t* data, Allocation* layout)
+void write_UNKNOWN(asynPortDriver* callback, uint8_t* data, void* alloc)
 {
 
 }

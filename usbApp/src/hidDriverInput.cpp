@@ -2,14 +2,8 @@
 #include <sstream>
 
 #include "hidDriver.h"
-#include "DataIO.h"
 
-void update_thread_callback(void* arg)
-{	
-	hidDriver* driver = (hidDriver*) arg;
-	
-	driver->update_thread();
-}
+void update_thread_callback(void* arg){ ((hidDriver*) arg)->update_thread(); }
 
 void receive_data_callback(struct libusb_transfer* response)
 {
@@ -161,12 +155,7 @@ void hidDriver::updateParams()
 		/* We don't need to update if nothing has changed */
 		bool changed = (memcmp(&state[offset], &last_state[offset], layout->length) != 0);
 		
-		if (this->need_init || changed)
-		{					
-			READ_FUNCTION tocall = getReadFunction(layout->type);
-			
-			tocall(this, &state[offset], layout);
-		}
+		if (this->need_init || changed)    { layout->type->read(this, &state[offset], layout); }
 		
 		this->setParamStatus(layout->index, asynSuccess);
 	}
