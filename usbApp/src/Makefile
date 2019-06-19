@@ -19,6 +19,7 @@ usb_SRCS += hidDriverOutput.cpp
 usb_SRCS += StringUtils.cpp
 usb_SRCS += DataLayout.cpp
 usb_SRCS += DataIO.cpp
+usb_SRCS += Allocation.cpp
 
 usb_LIBS += asyn 
 USR_SYS_LIBS += usb-1.0
