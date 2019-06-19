@@ -7,27 +7,8 @@
 #include "DataLayout.h"
 #include "hidDriver.h"
 
-static std::map<std::string, hidDriver*> device_drivers;
-
-
-static hidDriver* get_driver(const char* name)
-{
-	std::map<std::string, hidDriver*>::iterator dev = device_drivers.find(std::string(name));
-	
-	return (dev != device_drivers.end()) ? dev->second : NULL;
-}
-
-
-static void remove_driver(void* data)
-{
-	hidDriver* driver = (hidDriver*) data;
-	
-	device_drivers.erase(std::string(driver->portName));
-	
-	delete driver;
-}
-
-static bool port_used(const char* port_name)    { return (get_driver(port_name) != NULL); }
+static void remove_driver(void* data)           { delete ((hidDriver*) data); }
+static bool port_used(const char* port_name)    { return (findAsynPortDriver(port_name) != NULL); }
 
 
 bool checkConnectionArgs(const iocshArgBuf* args)
@@ -208,7 +189,7 @@ void usbCreateDriver(const char* port_name, const char* input_filename, const ch
 	DataLayout input_spec  (input_filename);
 	DataLayout output_spec (output_filename);
 	
-	device_drivers[std::string(port_name)] = new hidDriver(port_name, input_spec, output_spec);
+	epicsAtExit(remove_driver, new hidDriver(port_name, input_spec, output_spec));
 }
 
 
@@ -220,46 +201,44 @@ void usbConnectDevice( const char* port_name,
 {
 	std::string serial_out = (serial_num == NULL) ? "" : std::string(serial_num);
 	
-	get_driver(port_name)->connect( (uint16_t) vendor_id, 
-	                                (uint16_t) product_id, 
-	                                           serial_out, 
-	                                           interface_num);
-	
-	epicsAtExit(remove_driver, get_driver(port_name));
+	((hidDriver*) findAsynPortDriver(port_name))->connect( (uint16_t) vendor_id, 
+	                                                       (uint16_t) product_id, 
+	                                                                  serial_out, 
+	                                                                  interface_num);
 }
 
 
 void usbSetDelay(const char* port_name, double delay)
-{
-	get_driver(port_name)->setConnectDelay(delay);
+{ 
+	((hidDriver*) findAsynPortDriver(port_name))->setConnectDelay(delay);
 }
 
 
 void usbSetInterface(const char* port_name, int interface_num)
 {
-	get_driver(port_name)->setInterface(interface_num);
+	((hidDriver*) findAsynPortDriver(port_name))->setInterface(interface_num);
 }
 
 
 void usbSetDebugLevel(const char* port_name, int amt)
 {
-	get_driver(port_name)->setDebugLevel(amt);
+	((hidDriver*) findAsynPortDriver(port_name))->setDebugLevel(amt);
 }
 
 
 void usbSetTimeout( const char* port_name, int timeout)
 {
-	get_driver(port_name)->setFrequency(timeout);
+	((hidDriver*) findAsynPortDriver(port_name))->setFrequency(timeout);
 }
 
 void usbSetFrequency( const char* port_name, double frequency)
 {
-	get_driver(port_name)->setFrequency(frequency);
+	((hidDriver*) findAsynPortDriver(port_name))->setFrequency(frequency);
 }
 
 void usbShowIO(const char* port_name, int tf)
 {
-	get_driver(port_name)->setIOPrinting(tf);
+	((hidDriver*) findAsynPortDriver(port_name))->setIOPrinting(tf);
 }
 
 
