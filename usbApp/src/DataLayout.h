@@ -42,6 +42,8 @@ class Allocation
 	              shift(0),
 	              index(0),
 	              type(NULL) {}
+				
+	Allocation(std::string toparse);
 };
 
 

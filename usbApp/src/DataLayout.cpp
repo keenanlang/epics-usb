@@ -130,6 +130,33 @@ static void type_from_string(std::string type_input, Allocation* output)
 	}
 }
 
+Allocation::Allocation(std::string toparse)
+{
+	unsigned end = 0;
+	
+	/* NAME [START |, END|] |>> SHIFT| -> TYPE |/MASK| */
+	this->name = split_on(&toparse, "[");
+	
+	std::pair<std::string, std::string> index_range = split_optional(&toparse, ",", "]");
+		to_int(index_range.first, &this->start);
+		to_int(index_range.second, &end);
+		this->length = (end == 0) ? 1 : (end - this->start) + 1;
+		
+	std::pair<std::string, std::string> optional_shift = split_optional(&toparse, ">>", "->");
+	
+	if (not optional_shift.second.empty())
+	{
+		to_int(optional_shift.second, &this->shift);
+		
+		this->start += (int) (this->shift / 8);
+		this->shift = this->shift % 8;
+	}
+	
+	std::string type = split_on(&toparse, "/");
+		type_from_string(type, this);
+		hex_to_int(toparse, &this->mask);
+}
+
 
 DataLayout::DataLayout(const char* specification_file)
 :   bytes(0), 
@@ -150,43 +177,14 @@ DataLayout::DataLayout(const char* specification_file)
 	}
 	
 	std::string line;
-	std::string type;
-		
-	std::pair<std::string, std::string> index_range;
-	std::pair<std::string, std::string> optional_shift;
 	
 	while (getline(spec_file, line))
 	{
 		trim(&line);
-
+		
 		if(! line.empty() && line[0] != '#')
 		{
-			Allocation toadd;
-
-			unsigned end = 0;
-			
-			/* NAME [START |, END|] |>> SHIFT| -> TYPE |/MASK| */
-			toadd.name = split_on(&line, "[");
-			
-			index_range = split_optional(&line, ",", "]");
-				to_int(index_range.first, &toadd.start);
-				to_int(index_range.second, &end);
-				toadd.length = (end == 0) ? 1 : (end - toadd.start) + 1;
-				
-			optional_shift = split_optional(&line, ">>", "->");
-			
-			if (not optional_shift.second.empty())
-			{
-				to_int(optional_shift.second, &toadd.shift);
-				
-				toadd.start += (int) (toadd.shift / 8);
-				toadd.shift = toadd.shift % 8;
-			}
-			
-			type = split_on(&line, "/");
-				type_from_string(type, &toadd);
-				hex_to_int(line, &toadd.mask);
-
+			Allocation toadd(line);
 			this->add(toadd);
 		}
 	}
