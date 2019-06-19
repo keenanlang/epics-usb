@@ -76,7 +76,7 @@ void hidDriver::createParams(DataLayout& spec)
 		 * asynPortDriver handles access behind the scene for reads, so all we 
 		 * have to do is create the correct params to access.
 		 */
-		status = this->createParam(layout->name.c_str(), layout->type->param, &layout->index);
+		status = this->createParam(layout->name.c_str(), layout->type.param, &layout->index);
 		
 		if(status != asynSuccess)
 		{

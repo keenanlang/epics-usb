@@ -155,7 +155,7 @@ void hidDriver::updateParams()
 		/* We don't need to update if nothing has changed */
 		bool changed = (memcmp(&state[offset], &last_state[offset], layout->length) != 0);
 		
-		if (this->need_init || changed)    { layout->type->read(this, &state[offset], layout); }
+		if (this->need_init || changed)    { layout->type.read(this, &state[offset], layout); }
 		
 		this->setParamStatus(layout->index, asynSuccess);
 	}

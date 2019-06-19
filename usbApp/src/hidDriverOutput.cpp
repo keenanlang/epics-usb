@@ -30,7 +30,7 @@ asynStatus hidDriver::sendOutputReport()
 		{
 			Allocation* layout = this->output_specification.get(index);
 			
-			layout->type->write(this, &data[layout->start], layout);
+			layout->type.write(this, &data[layout->start], layout);
 		}
 	
 		int errno = libusb_interrupt_transfer( this->DEVICE, 

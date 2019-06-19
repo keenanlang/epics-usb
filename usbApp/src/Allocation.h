@@ -2,7 +2,7 @@
 #define INC_ALLOCATION_H
 
 #include <string>
-#include "DataIO.h"
+#include "DataType.h"
 
 /** Type representing a single asyn parameter */
 class Allocation
@@ -27,15 +27,14 @@ class Allocation
 	/** Parameter Index */
 	int index;
 	
-	DataType* type;
+	DataType type;
 	
 	Allocation(): name(""),
 	              length(0),
 	              start(0),
 	              mask(0xFFFFFFFF),
 	              shift(0),
-	              index(0),
-	              type(NULL) {}
+	              index(0){}
 				
 	Allocation(std::string toparse);
 };

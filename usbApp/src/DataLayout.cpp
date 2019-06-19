@@ -77,6 +77,6 @@ void DataLayout::add(Allocation& input)
 	this->bytes = (endpoint > bytes) ? endpoint : bytes;
 		
 	/* Build the masks used by asynPortDriver to properly set parameters */	
-	this->face_mask |= input.type->mask;;
-	this->rupt_mask |= input.type->mask;;	
+	this->face_mask |= input.type.mask;;
+	this->rupt_mask |= input.type.mask;;	
 }
