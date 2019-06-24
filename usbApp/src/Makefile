@@ -18,7 +18,7 @@ usb_SRCS += hidDriverOutput.cpp
 usb_SRCS += DataIO.cpp
 
 SRC_DIRS += $(TOP)/usbApp/src/parsing
-USR_INCLUDES += $(TOP)/usbApp/src/parsing
+USR_INCLUDES += -I$(TOP)/usbApp/src/parsing
 
 usb_SRCS += StringUtils.cpp
 usb_SRCS += DataLayout.cpp
