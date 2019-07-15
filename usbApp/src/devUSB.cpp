@@ -228,7 +228,7 @@ void usbSetDebugLevel(const char* port_name, int amt)
 
 void usbSetTimeout( const char* port_name, int timeout)
 {
-	((hidDriver*) findAsynPortDriver(port_name))->setFrequency(timeout);
+	((hidDriver*) findAsynPortDriver(port_name))->setTimeout(timeout);
 }
 
 void usbSetFrequency( const char* port_name, double frequency)
