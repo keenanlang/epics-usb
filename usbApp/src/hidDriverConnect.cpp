@@ -80,16 +80,16 @@ void hidDriver::disconnect()
 			
 			this->state = NULL;
 			this->last_state = NULL;
-		epicsMutexUnlock(this->input_state);
 			
-		epicsMutexLock(mylock);			
-			this->releaseInterface();
+			epicsMutexLock(mylock);			
+				this->releaseInterface();
+					
+				libusb_close(DEVICE);
 				
-			libusb_close(DEVICE);
-		epicsMutexUnlock(mylock);
-	
-		this->connected = false;
-		this->DEVICE = NULL;
+				this->connected = false;
+				this->DEVICE = NULL;
+			epicsMutexUnlock(mylock);
+		epicsMutexUnlock(this->input_state);
 	}
 	epicsMutexUnlock(this->device_state);
 }
