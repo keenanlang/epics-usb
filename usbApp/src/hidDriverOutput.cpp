@@ -36,7 +36,7 @@ asynStatus hidDriver::sendOutputReport()
 			tocall(this, &data[layout->start], layout);
 		}
 	
-		int errno = libusb_interrupt_transfer( this->DEVICE, 
+		int err_no = libusb_interrupt_transfer( this->DEVICE, 
 		                                       this->ENDPOINT_ADDRESS_OUT, 
 		                                       data, 
 		                                       this->TRANSFER_LENGTH_OUT, 
@@ -45,7 +45,7 @@ asynStatus hidDriver::sendOutputReport()
 	epicsMutexUnlock(this->output_state);
 		
 	
-	if (errno == LIBUSB_ERROR_TIMEOUT)
+	if (err_no == LIBUSB_ERROR_TIMEOUT)
 	{
 		this->printDebug(1, "Connection timedout listening for output device report.\n");
 		
@@ -56,9 +56,9 @@ asynStatus hidDriver::sendOutputReport()
 		return asynTimeout;
 	}
 	
-	else if (errno == LIBUSB_ERROR_PIPE or
-	         errno == LIBUSB_ERROR_NOT_FOUND or
-	         errno == LIBUSB_ERROR_NO_DEVICE)
+	else if (err_no == LIBUSB_ERROR_PIPE or
+	         err_no == LIBUSB_ERROR_NOT_FOUND or
+	         err_no == LIBUSB_ERROR_NO_DEVICE)
 	{
 		this->printDebug(1, "Problem communicating with device, attempting reconnection.\n");
 			
@@ -68,7 +68,7 @@ asynStatus hidDriver::sendOutputReport()
 		return asynDisconnected;
 	}
 			
-	else if (errno == LIBUSB_ERROR_OVERFLOW)
+	else if (err_no == LIBUSB_ERROR_OVERFLOW)
 	{
 		this->printDebug(1, "Too much information sent by device, reloading connection parameters.\n");
 		
