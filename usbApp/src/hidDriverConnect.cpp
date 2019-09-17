@@ -189,10 +189,12 @@ void hidDriver::connect_thread()
 	
 	this->disconnect();
 	
-	epicsMutexLock(this->device_state);
+	
 	while (not this->connected)
 	{
+		epicsMutexLock(this->device_state);
 		this->findDevice();
+		epicsMutexUnlock(this->device_state);
 		
 		if(this->DEVICE == NULL)
 		{
@@ -209,7 +211,6 @@ void hidDriver::connect_thread()
 			epicsThreadSleep(TIME_BETWEEN_CHECKS);
 		}
 	}
-	epicsMutexUnlock(this->device_state);
 }
 
 
