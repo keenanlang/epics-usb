@@ -41,6 +41,8 @@ hidDriver::hidDriver(const char* port_name, DataLayout& input, DataLayout& outpu
 	
 	this->DEVICE       = NULL;
 	
+	this->print_transfer = false;
+	
 	/* Asyn Initialization */
 	this->createParams(this->input_specification);
 	this->createParams(this->output_specification);	

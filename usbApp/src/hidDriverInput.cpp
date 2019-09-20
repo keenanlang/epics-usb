@@ -143,22 +143,25 @@ void hidDriver::updateParams()
 		printf("\n");
 	}
 
-	/*
-	 * Iterate through the asyn params and assign them to their 
-	 * registers.
-	 */
-	for (unsigned index = 0; index < this->input_specification.size(); index += 1)
+	if (! this->need_init)
 	{
-		Allocation* layout = this->input_specification.get(index);
-		
-		unsigned offset = layout->start;
-		
-		/* We don't need to update if nothing has changed */
-		bool changed = (memcmp(&state[offset], &last_state[offset], layout->length) != 0);
-		
-		if (this->need_init || changed)    { layout->type.read(this, &state[offset], layout); }
-		
-		this->setParamStatus(layout->index, asynSuccess);
+		/*
+		* Iterate through the asyn params and assign them to their 
+		* registers.
+		*/
+		for (unsigned index = 0; index < this->input_specification.size(); index += 1)
+		{
+			Allocation* layout = this->input_specification.get(index);
+			
+			unsigned offset = layout->start;
+			
+			/* We don't need to update if nothing has changed */
+			bool changed = (memcmp(&state[offset], &last_state[offset], layout->length) != 0);
+			
+			if (changed)    { layout->type.read(this, &state[offset], layout); }
+			
+			this->setParamStatus(layout->index, asynSuccess);
+		}
 	}
 	
 	this->need_init = false;
@@ -182,7 +185,8 @@ void hidDriver::loadInputData(const struct libusb_endpoint_descriptor endpoint)
 	
 	this->ENDPOINT_ADDRESS_IN = endpoint.bEndpointAddress;
 	this->TRANSFER_LENGTH_IN  = endpoint.wMaxPacketSize;
-		
+	
+	memset(this->state, 0, TRANSFER_LENGTH_IN);
 	memset(this->last_state, 0, TRANSFER_LENGTH_IN);
 }
 
