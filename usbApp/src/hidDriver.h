@@ -97,8 +97,8 @@ class hidDriver : public asynPortDriver
 		
 		unsigned int DEBUG_LEVEL;
 		
-		uint8_t* state;
-		uint8_t* last_state;
+		uint8_t state[64];
+		uint8_t last_state[64];
 		
 		libusb_context*         context;
 		libusb_device_handle*   DEVICE;

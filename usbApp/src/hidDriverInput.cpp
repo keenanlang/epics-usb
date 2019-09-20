@@ -36,6 +36,7 @@ void hidDriver::update_thread()
 	{
 		epicsTimeGetCurrent(&start);
 		
+		epicsMutexLock(this->input_state);
 		this->xfr = libusb_alloc_transfer(0);
 		
 		libusb_fill_interrupt_transfer( this->xfr, 
@@ -48,7 +49,7 @@ void hidDriver::update_thread()
 		                                this->TIMEOUT);
 		
 		int status = libusb_submit_transfer(this->xfr);
-						
+		
 		/*
 		* If the device is not there anymore, change state to disconnected 
 		* and then try to connect again. Reconnecting will spawn its own
@@ -59,7 +60,8 @@ void hidDriver::update_thread()
 		{
 			libusb_free_transfer(this->xfr);
 			this->xfr = NULL;
-		
+			epicsMutexUnlock(this->input_state);
+			
 			this->printDebug(1, "Problem communicating with device, attempting reconnection.\n");
 			
 			this->disconnect();
@@ -68,26 +70,25 @@ void hidDriver::update_thread()
 		}
 		
 		this->active = true;
-		
-		epicsMutexLock(this->input_state);
+		epicsMutexUnlock(this->input_state);
 		epicsMutexUnlock(this->device_state);
 		
 		double diff;
 		
 		do
 		{
-			libusb_handle_events_completed(NULL, NULL);
+			libusb_handle_events_completed(this->context, NULL);
 			epicsTimeGetCurrent(&end);
 			
 			diff = epicsTimeDiffInSeconds(&end, &start);
 			
+			epicsMutexLock(this->input_state);
 			if (this->active and (this->FREQUENCY != 0.0) and (diff >= this->FREQUENCY))
 			{
 				libusb_cancel_transfer(this->xfr);
 			}
+			epicsMutexUnlock(this->input_state);
 		} while (this->active);
-		
-		epicsMutexUnlock(this->input_state);
 		
 		if (diff < this->FREQUENCY)   { epicsThreadSleep(diff - this->FREQUENCY); }
 		
@@ -101,7 +102,7 @@ void hidDriver::update_thread()
 
 
 void hidDriver::receiveData(struct libusb_transfer* response)
-{
+{	
 	if (response->status == LIBUSB_TRANSFER_COMPLETED)    { this->updateParams(); }
 	
 	/*
@@ -190,19 +191,10 @@ void hidDriver::loadInputData(const struct libusb_endpoint_descriptor endpoint)
 	this->printDebug(10, "Input endpoint found at: 0x%02X\n", endpoint.bEndpointAddress);
 	this->printDebug(10, "Report protocol length: %d bytes\n", endpoint.wMaxPacketSize);
 	
-	epicsMutexLock(this->input_state);
-		this->ENDPOINT_ADDRESS_IN = endpoint.bEndpointAddress;
-		this->TRANSFER_LENGTH_IN  = endpoint.wMaxPacketSize;
+	this->ENDPOINT_ADDRESS_IN = endpoint.bEndpointAddress;
+	this->TRANSFER_LENGTH_IN  = endpoint.wMaxPacketSize;
 		
-		delete [] this->state;
-		delete [] this->last_state;
-		
-		this->state = new uint8_t[TRANSFER_LENGTH_IN];
-		this->last_state = new uint8_t[TRANSFER_LENGTH_IN];
-	
-		memset(this->state, 0, TRANSFER_LENGTH_IN);
-		memset(this->last_state, 0, TRANSFER_LENGTH_IN);
-	epicsMutexUnlock(this->input_state);
+	memset(this->last_state, 0, TRANSFER_LENGTH_IN);
 }
 
 

@@ -16,7 +16,7 @@ const int DIRECTION_INPUT = 0x80;
  * threads, we need to be able to maintain integrity of the list of
  * available USB devices.
  */
-epicsMutexId mylock = epicsMutexCreate();
+static epicsMutexId mylock = epicsMutexCreate();
 
 
 void connect_thread_callback(void* arg)
@@ -64,32 +64,23 @@ void hidDriver::disconnect()
 		this->printDebug(20, "Disconnecting device\n");
 		
 		this->setStatuses(asynError);
-
-		if (this->active)
-		{
-			libusb_cancel_transfer(this->xfr);
-		}
 		
 		/* 
 		* We don't want to delete our data while our update thread is still reading 
 		* through it 
 		*/
 		epicsMutexLock(this->input_state);
-			delete [] this->state;;
-			delete [] this->last_state;
-			
-			this->state = NULL;
-			this->last_state = NULL;
-			
-			epicsMutexLock(mylock);			
-				this->releaseInterface();
-					
-				libusb_close(DEVICE);
-				
-				this->connected = false;
-				this->DEVICE = NULL;
-			epicsMutexUnlock(mylock);
+			if (this->active)    { libusb_cancel_transfer(this->xfr); }
 		epicsMutexUnlock(this->input_state);
+
+		epicsMutexLock(mylock);
+			this->releaseInterface();
+				
+			libusb_close(DEVICE);
+			this->DEVICE = NULL;
+		epicsMutexUnlock(mylock);
+		
+		this->connected = false;
 	}
 	epicsMutexUnlock(this->device_state);
 }
@@ -243,6 +234,7 @@ void  hidDriver::findDevice()
 			{ 
 				this->printDebug(20, "Found matching device, but error when opening connection: %d\n", status);
 				this->printDebug(20, "Continuing looking through list\n");
+				this->DEVICE = NULL;
 				continue;
 			}
 			
@@ -252,6 +244,7 @@ void  hidDriver::findDevice()
 			{
 				this->printDebug(20, "Found matching device, but error when claiming: %d\n", status);
 				this->printDebug(20, "Continuing looking through list\n");
+				this->DEVICE = NULL;
 				continue;
 			}
 			
@@ -261,12 +254,11 @@ void  hidDriver::findDevice()
 			
 			this->connected = true;
 			
-			printf("connection (0x%04X:0x%04X) succeeded\n", this->VENDOR_ID, this->PRODUCT_ID);
+			this->printDebug(0, "connection (0x%04X:0x%04X) succeeded\n", this->VENDOR_ID, this->PRODUCT_ID);
 			
 			break;
 		}
 	}
-	
 	epicsMutexUnlock(mylock);
 	
 	libusb_free_device_list(connected_devices, 0);
