@@ -39,8 +39,6 @@ hidDriver::hidDriver(const char* port_name, DataLayout& input, DataLayout& outpu
 	this->input_state  = epicsMutexCreate();
 	this->output_state = epicsMutexCreate();
 	
-	this->state        = NULL;
-	this->last_state   = NULL;
 	this->DEVICE       = NULL;
 	
 	/* Asyn Initialization */
@@ -57,6 +55,8 @@ hidDriver::hidDriver(const char* port_name, DataLayout& input, DataLayout& outpu
 hidDriver::~hidDriver()
 {
 	this->disconnect();
+	
+	while (this->connected) {}
 	
 	libusb_exit(context);
 	
