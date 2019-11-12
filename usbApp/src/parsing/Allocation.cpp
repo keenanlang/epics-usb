@@ -24,6 +24,10 @@ Allocation::Allocation(std::string toparse)
 		this->start += (int) (this->shift / 8);
 		this->shift = this->shift % 8;
 	}
+	else
+	{
+		this->shift = 0;
+	}
 	
 	std::string type = split_on(&toparse, "/");
 		bool success = type_from_string(type, &this->type);
