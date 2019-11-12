@@ -4,6 +4,12 @@
 bool type_from_string(std::string type_input, DataType* output);
 
 Allocation::Allocation(std::string toparse)
+:name(""),
+length(0),
+start(0),
+mask(0xFFFFFFFF),
+shift(0),
+index(0)
 {
 	unsigned end = 0;
 	
@@ -23,10 +29,6 @@ Allocation::Allocation(std::string toparse)
 		
 		this->start += (int) (this->shift / 8);
 		this->shift = this->shift % 8;
-	}
-	else
-	{
-		this->shift = 0;
 	}
 	
 	std::string type = split_on(&toparse, "/");
