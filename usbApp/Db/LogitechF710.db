@@ -1,0 +1,521 @@
+record(ai, "$(P)$(R)LStickHorizontal")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)LEFTLR_STATE")
+
+	field(VAL, 127)
+
+	field(FLNK, "$(P)$(R)LStickHorizontalFanout")
+}
+
+record(fanout, "$(P)$(R)LStickHorizontalFanout")
+{
+	field(LNK1, "$(P)$(R)LStickRight")
+	field(LNK2, "$(P)$(R)LStickLeft")
+}
+
+record(calcout, "$(P)$(R)LStickRight")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)LStickHorizontal")
+
+	field(CALC, "((A - 127) > 50) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)LSRightSeq.PROC")
+}
+
+record(calcout, "$(P)$(R)LStickLeft")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)LStickHorizontal")
+
+	field(CALC, "((A - 127) < -50) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)LSLeftSeq.PROC")
+}
+
+
+record(ai, "$(P)$(R)LStickVertical")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)LEFTUD_STATE")
+
+	field(FLNK, "$(P)$(R)LStickVerticalFanout")
+}
+
+record(fanout, "$(P)$(R)LStickVerticalFanout")
+{
+	field(LNK1, "$(P)$(R)LStickUp")
+	field(LNK2, "$(P)$(R)LStickDown")
+}
+
+record(calcout, "$(P)$(R)LStickUp")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)LStickVertical")
+
+	field(CALC, "((A - 127) < -50) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)LSUpSeq.PROC")
+}
+
+record(calcout, "$(P)$(R)LStickDown")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)LStickVertical")
+
+	field(CALC, "((A - 127) > 50) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)LSDownSeq.PROC")
+}
+
+
+record(ai, "$(P)$(R)RStickHorizontal")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)RIGHTLR_STATE")
+
+	field(VAL, 127)
+
+	field(FLNK, "$(P)$(R)RStickHorizontalFanout")
+}
+
+record(fanout, "$(P)$(R)RStickHorizontalFanout")
+{
+	field(LNK1, "$(P)$(R)RStickRight")
+	field(LNK2, "$(P)$(R)RStickLeft")
+}
+
+record(calcout, "$(P)$(R)RStickRight")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)RStickHorizontal")
+
+	field(CALC, "((A - 127) > 50) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)RSRightSeq.PROC")
+}
+
+record(calcout, "$(P)$(R)RStickLeft")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)RStickHorizontal")
+
+	field(CALC, "((A - 127) < -50) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)RSLeftSeq.PROC")
+}
+
+
+record(ai, "$(P)$(R)RStickVertical")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)RIGHTUD_STATE")
+
+	field(VAL, 127)
+
+	field(FLNK, "$(P)$(R)RStickVerticalFanout")
+}
+
+record(fanout, "$(P)$(R)RStickVerticalFanout")
+{
+	field(LNK1, "$(P)$(R)RStickUp")
+	field(LNK2, "$(P)$(R)RStickDown")
+}
+
+record(calcout, "$(P)$(R)RStickUp")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)RStickVertical")
+
+	field(CALC, "((A - 127) < -50) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)RSUpSeq.PROC")
+}
+
+record(calcout, "$(P)$(R)RStickDown")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)RStickVertical")
+
+	field(CALC, "((A - 127) > 50) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)RSDownSeq.PROC")
+}
+
+
+record(bi, "$(P)$(R)RightBumperPressed")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)RB_PRESSED")
+
+	field(FLNK, "$(P)$(R)RightBumperOutput")
+}
+
+record(calcout, "$(P)$(R)RightBumperOutput")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)RightBumperPressed.RVAL")
+
+	field(CALC, "(A) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)RBSeq.PROC")
+}
+
+
+record(bi, "$(P)$(R)RightTriggerPressed")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)RT_PRESSED")
+
+	field(FLNK, "$(P)$(R)RightTriggerOutput")
+}
+
+record(calcout, "$(P)$(R)RightTriggerOutput")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)RightTriggerPressed.RVAL")
+
+	field(CALC, "(A) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)RTSeq.PROC")
+}
+
+
+record(bi, "$(P)$(R)RStickPressed")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)R3_PRESSED")
+
+	field(FLNK, "$(P)$(R)RStickOutput")
+}
+
+record(calcout, "$(P)$(R)RStickOutput")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)RStickPressed.RVAL")
+
+	field(CALC, "(A) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)R3Seq.PROC")
+}
+
+
+record(bi, "$(P)$(R)LeftBumperPressed")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)LB_PRESSED")
+
+	field(FLNK, "$(P)$(R)LeftBumperOutput")
+}
+
+record(calcout, "$(P)$(R)LeftBumperOutput")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)LeftBumperPressed.RVAL")
+
+	field(CALC, "(A) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)LBSeq.PROC")
+}
+
+
+record(bi, "$(P)$(R)LeftTriggerPressed")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)LT_PRESSED")
+
+	field(FLNK, "$(P)$(R)LeftTriggerOutput")
+}
+
+record(calcout, "$(P)$(R)LeftTriggerOutput")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)LeftTriggerPressed.RVAL")
+
+	field(CALC, "(A) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)LTSeq.PROC")
+}
+
+
+record(bi, "$(P)$(R)LStickPressed")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)L3_PRESSED")
+
+	field(FLNK, "$(P)$(R)LStickOutput")
+}
+
+record(calcout, "$(P)$(R)LStickOutput")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)LStickPressed.RVAL")
+
+	field(CALC, "(A) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)L3Seq.PROC")
+}
+
+
+record(bi, "$(P)$(R)APressed")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)A_PRESSED")
+
+	field(FLNK, "$(P)$(R)AOutput")
+}
+
+record(calcout, "$(P)$(R)AOutput")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)APressed.RVAL")
+
+	field(CALC, "(A) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)ASeq.PROC")
+}
+
+
+record(bi, "$(P)$(R)BPressed")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)B_PRESSED")
+
+	field(FLNK, "$(P)$(R)BOutput")
+}
+
+record(calcout, "$(P)$(R)BOutput")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)BPressed.RVAL")
+
+	field(CALC, "(A) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)BSeq.PROC")
+}
+
+
+record(bi, "$(P)$(R)XPressed")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)X_PRESSED")
+
+	field(FLNK, "$(P)$(R)XOutput")
+}
+
+record(calcout, "$(P)$(R)XOutput")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)XPressed.RVAL")
+
+	field(CALC, "(A) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)XSeq.PROC")
+}
+
+
+record(bi, "$(P)$(R)YPressed")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)Y_PRESSED")
+
+	field(FLNK, "$(P)$(R)YOutput")
+}
+
+record(calcout, "$(P)$(R)YOutput")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)YPressed.RVAL")
+
+	field(CALC, "(A) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)YSeq.PROC")
+}
+
+
+record(bi, "$(P)$(R)StartPressed")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)START_PRESSED")
+
+	field(FLNK, "$(P)$(R)StartOutput")
+}
+
+record(calcout, "$(P)$(R)StartOutput")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)StartPressed.RVAL")
+
+	field(CALC, "(A) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)StartSeq.PROC")
+}
+
+
+record(bi, "$(P)$(R)BackPressed")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)BACK_PRESSED")
+
+	field(FLNK, "$(P)$(R)BackOutput")
+}
+
+record(calcout, "$(P)$(R)BackOutput")
+{
+	field(OOPT, "Transition To Non-zero")
+
+	field(INPA, "$(P)$(R)BackPressed")
+
+	field(CALC, "(A) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)BackSeq.PROC")
+}
+
+
+record(mbbi, "$(P)$(R)DPad")
+{
+	field(DTYP, "asynInt32")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(PORT), 0, 0)DPAD_STATE")
+
+	field(VAL, 8)
+
+	field(ZRST, "Up")
+	field(ONST, "Up and Right")
+	field(TWST, "Right")
+	field(THST, "Down and Right")
+	field(FRST, "Down")
+	field(FVST, "Down and Left")
+	field(SXST, "Left")
+	field(SVST, "Up and Left")
+	field(EIST, "None")
+
+	field(ZRVL, 0)
+	field(ONVL, 1)
+	field(TWVL, 2)
+	field(THVL, 3)
+	field(FRVL, 4)
+	field(FVVL, 5)
+	field(SXVL, 6)
+	field(SVVL, 7)
+	field(EIVL, 8)
+
+	field(FLNK, "$(P)$(R)DPadFanout")
+}
+
+record(fanout, "$(P)$(R)DPadFanout")
+{
+	field(LNK1, "$(P)$(R)UpOutput")
+	field(LNK2, "$(P)$(R)DownOutput")
+	field(LNK3, "$(P)$(R)LeftOutput")
+	field(LNK4, "$(P)$(R)RightOutput")
+}
+
+record(calcout, "$(P)$(R)UpOutput")
+{
+	field(OOPT, "When Non-zero")
+
+	field(INPA, "$(P)$(R)DPad")
+
+	field(CALC, "(A=0) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)UpSeq.PROC")
+}
+
+record(calcout, "$(P)$(R)DownOutput")
+{
+	field(OOPT, "When Non-zero")
+
+	field(INPA, "$(P)$(R)DPad")
+
+	field(CALC, "(A=4) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)DownSeq.PROC")
+}
+
+record(calcout, "$(P)$(R)LeftOutput")
+{
+	field(OOPT, "When Non-zero")
+
+	field(INPA, "$(P)$(R)DPad")
+
+	field(CALC, "(A=6) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)LeftSeq.PROC")
+}
+
+record(calcout, "$(P)$(R)RightOutput")
+{
+	field(OOPT, "When Non-zero")
+
+	field(INPA, "$(P)$(R)DPad")
+
+	field(CALC, "(A=2) ? 1 : 0")
+	
+	field(OUT, "$(P)$(R)RightSeq.PROC")
+}
+
+record(ai, "$(P)$(R)Test")
+{
+}
+
+record(seq, "$(P)$(R)UpSeq") {}
+record(seq, "$(P)$(R)DownSeq") {}
+record(seq, "$(P)$(R)LeftSeq") {}
+record(seq, "$(P)$(R)RightSeq") {}
+record(seq, "$(P)$(R)ASeq") {}
+record(seq, "$(P)$(R)BSeq") {}
+record(seq, "$(P)$(R)XSeq") {}
+record(seq, "$(P)$(R)YSeq") {}
+record(seq, "$(P)$(R)LBSeq") {}
+record(seq, "$(P)$(R)LTSeq") {}
+record(seq, "$(P)$(R)L3Seq") {}
+record(seq, "$(P)$(R)RBSeq") {}
+record(seq, "$(P)$(R)RTSeq") {}
+record(seq, "$(P)$(R)R3Seq") {}
+record(seq, "$(P)$(R)LSUpSeq") {}
+record(seq, "$(P)$(R)LSDownSeq") {}
+record(seq, "$(P)$(R)LSLeftSeq") {}
+record(seq, "$(P)$(R)LSRightSeq") {}
+record(seq, "$(P)$(R)RSUpSeq") {}
+record(seq, "$(P)$(R)RSDownSeq") {}
+record(seq, "$(P)$(R)RSLeftSeq") {}
+record(seq, "$(P)$(R)RSRightSeq") {}
+record(seq, "$(P)$(R)StartSeq") {}
+record(seq, "$(P)$(R)BackSeq") {}
